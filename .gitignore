@@ -129,3 +129,9 @@
 /BookingTime/obj/project.nuget.cache
 /BookingTime/BookingTime.csproj
 /BookingTime/BookingTime.csproj.user
+/BookingTime/Properties/PublishProfiles/FolderProfile.pubxml
+/BookingTime/obj/Debug/net7.0/BookingTime.csproj.AssemblyReference.cache
+/.vs/BookingTime/FileContentIndex/2ca9a0da-d31e-41a0-b7d6-5d595df4e816.vsidx
+/.vs/BookingTime/FileContentIndex/8d4ba3bd-ec41-4403-af49-17cb21b6dbdd.vsidx
+/.vs/BookingTime/FileContentIndex/b8abf850-9d70-4ad4-9216-228383887e3f.vsidx
+/BookingTime/obj/Debug/net7.0/BookingTime.AssemblyInfo.cs
