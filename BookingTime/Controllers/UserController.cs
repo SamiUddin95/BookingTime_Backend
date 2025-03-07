@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Cors;
 using MailKit.Net.Smtp;
 using MailKit.Security;
 using MimeKit;
+using BookingTime.DTO.RequestModel;
 
 namespace BookingTime.Controllers
 {
@@ -21,11 +22,7 @@ namespace BookingTime.Controllers
         {
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
         }
-        public class LoginRequest
-        {
-            public string Email { get; set; }
-            public string Password { get; set; }
-        }
+       
         [HttpPost]
         [Route("/api/login")]
         [EnableCors("AllowAngularApp")]
@@ -65,7 +62,7 @@ namespace BookingTime.Controllers
 
         [HttpPost]
         [Route("/api/signUp")]
-        public object signUp([FromBody] User form)
+        public object signUp([FromBody] SignUpRequestModel form)
         {
             try
             {
@@ -181,6 +178,7 @@ namespace BookingTime.Controllers
                 return false;
             }
         }
+   
         [HttpGet("verify/{token}")]
         public object VerifyEmail(string token) 
         {
