@@ -37,7 +37,7 @@ namespace BookingTime.Controllers
             return listOfProperty;
         }
 
-        [HttpPost("/api/AddListingProperty")]
+        [HttpPost("/api/AddListingPropertyOld")]
         [EnableCors("AllowAngularApp")]
         public IActionResult AddListingProperty([FromBody] JsonElement request)
         {
@@ -52,12 +52,112 @@ namespace BookingTime.Controllers
             return Ok(new { code = 200, msg = "Property added successfully!" });
         }
 
+        [HttpPost("/api/AddListingProperty")]
+        [EnableCors("AllowAngularApp")]
+        public async Task<IActionResult> InsertProperty(AddPropertyDetailsRequestModel request)
+        {
+            try
+            {
+                BookingtimeContext _context = new BookingtimeContext(_configuration);
+
+                var existingProperty = await _context.PropertyDetails
+           .Where(p => p.ListName == request.ListName &&
+                       p.CountryId == request.CountryId &&
+                       p.StateId == request.StateId &&
+                       p.CityId == request.CityId &&
+                       (p.Latitude == request.Latitude && p.Longitude == request.Longitude))
+           .FirstOrDefaultAsync();
+
+                if (existingProperty != null)
+                {
+                    return BadRequest(new { Message = "Property with these details already exist in the system. Please check your input and try again.", sucess = false });
+                }
+
+                string imagePath = await SaveImageAsync(request.Thumbnail);
+
+                var property = new PropertyDetail
+                {
+                    ListTypeId = request.ListTypeId,
+                    ListName = request.ListName,
+                    UsageType = request.UsageType,
+                    ShortDesc = request.ShortDesc,
+                    CountryId = request.CountryId,
+                    StateId = request.StateId,
+                    CityId = request.CityId,
+                    PostalCode = request.PostalCode,
+                    Street = request.Street,
+                    Latitude = request.Latitude,
+                    Longitude = request.Longitude,
+                    LongDesc = request.LongDesc,
+                    TotalFloor = request.TotalFloor,
+                    TotalRoom = request.TotalRoom,
+                    RoomArea = request.RoomArea,
+                    CurrencyId = request.CurrencyId,
+                    BasePrice = request.BasePrice,
+                    Discount = request.Discount,
+                    PolicyDesc = request.PolicyDesc,
+                    CancellationOption = request.CancellationOption,
+                    Charges = request.Charges,
+                    RatingId = request.RatingId,
+                    Thumbnail = imagePath
+                };
+
+                _context.PropertyDetails.Add(property);
+                await _context.SaveChangesAsync();
+
+
+                if (request.Amenities != null && request.Amenities.Count > 0)
+                {
+                    var amenitiesList = request.Amenities
+                        .Where(a => a.AmenitiesId.HasValue)
+                        .Select(a => new PropertyAmenity
+                        {
+                            PropertyDetailId = property.Id,
+                            AmenityId = a.AmenitiesId.Value
+                        }).ToList();
+
+                    _context.PropertyAmenities.AddRange(amenitiesList);
+                    await _context.SaveChangesAsync();
+                }
+
+                return Ok(new { Message = $@"Successfully Created : PropertyId : {property.Id}", sucess = true });
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.InnerException != null ? ex.InnerException.ToString() : "Internal Server Error");
+            }
+        }
+
+        private async Task<string> SaveImageAsync(IFormFile? file)
+        {
+            if (file == null || file.Length == 0)
+                return string.Empty;
+
+            string folderPath = _configuration["PropertyImagesPath"];
+            if (!Directory.Exists(folderPath))
+            {
+                Directory.CreateDirectory(folderPath);
+            }
+            string fileName = $"{Guid.NewGuid()}_{file.FileName}";
+            string filePath = Path.Combine(folderPath, fileName);
+
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            return $"{filePath}";
+        }
+
         [HttpPost("/api/GetListingPropertyList")]
         [EnableCors("AllowAngularApp")]
         public async Task<PropertyResponseModeldetails> GetListingPropertyListAsync([FromBody] PropertiesFilterRequestModel request)
         {
             try
             {
+                BookingtimeContext _context = new BookingtimeContext(_configuration);
+                string amenities = null;
+
                 string? ConnectionString = _configuration.GetConnectionString("BookingTimeConnection");
                 List<PropertiesListResponseModel> propertylist = new List<PropertiesListResponseModel>();
                 PropertyResponseModeldetails model = new PropertyResponseModeldetails();
@@ -66,6 +166,13 @@ namespace BookingTime.Controllers
                 SqlConnection con = new SqlConnection(builder.ConnectionString);
                 System.Data.Common.DbDataReader sqlReader;
                 con.Open();
+                if (request.Details.amenities != null)
+                {
+                    amenities = request.Details.amenities != null && request.Details.amenities.Any()
+                   ? string.Join(",", request.Details.amenities.Select(a => a.AmenitiesId))
+                   : null;
+                }
+
                 using (SqlCommand cmd = con.CreateCommand())
                 {
                     cmd.CommandText = "Sp_PropertyList";
@@ -74,15 +181,15 @@ namespace BookingTime.Controllers
 
                     cmd.Parameters.AddRange(new[]
                  {
-         new SqlParameter("@HotelTypeId", request.Details.hotelTypeId),
-         new SqlParameter("@PriceRangeFrom", request.Details.priceRangeFrom),
-         new SqlParameter("@PriceRangeTo", request.Details.priceRangeTo),
-         new SqlParameter("@RatingId", request.Details.ratingId),
-         new SqlParameter("@Amenities", request.Details.amenities),
+                 new SqlParameter("@HotelTypeId", request.Details.hotelTypeId),
+                 new SqlParameter("@PriceRangeFrom", request.Details.priceRangeFrom),
+                 new SqlParameter("@PriceRangeTo", request.Details.priceRangeTo),
+                 new SqlParameter("@RatingId", request.Details.ratingId),
+                 new SqlParameter("@Amenities", amenities),
 
-         new SqlParameter("@Page",request.PaginationInfo.Page),
-         new SqlParameter("@PageSize", request.PaginationInfo.RowsPerPage)
-        });
+                 new SqlParameter("@Page",request.PaginationInfo.Page),
+                 new SqlParameter("@PageSize", request.PaginationInfo.RowsPerPage)
+                });
 
                     var adapter = new SqlDataAdapter(cmd);
                     var ds = new DataSet();
@@ -110,7 +217,17 @@ namespace BookingTime.Controllers
                             countryName = row["CountryName"] != DBNull.Value ? row["CountryName"].ToString() : string.Empty,
                             stateName = row["StateName"] != DBNull.Value ? row["StateName"].ToString() : string.Empty,
                             rating = row["Rating"] != DBNull.Value ? row["Rating"].ToString() : string.Empty,
-                            amenities = row["Amenities"] != DBNull.Value ? row["Amenities"].ToString() : string.Empty
+                            amenities = _context.PropertyAmenities
+                            .Where(pa => pa.PropertyDetailId == Convert.ToInt32(row["ID"]))
+                            .Join(_context.Amenities,
+                                  pa => pa.AmenityId,
+                                  a => a.Id,
+                                  (pa, a) => new amenities
+                                  {
+                                      id = a.Id,
+                                      name = a.Amenities
+                                  })
+                            .ToList()
                         }).ToList();
                     model.propertydetails = propertylist;
                     model.TotalCount = Convert.ToInt32(count.Rows[0]["TotalCount"]);

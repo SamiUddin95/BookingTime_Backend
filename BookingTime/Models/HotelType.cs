@@ -10,4 +10,6 @@ public partial class HotelType
     public string HotelType1 { get; set; } = null!;
 
     public string? Description { get; set; }
+
+    public virtual ICollection<PropertyDetail> PropertyDetails { get; } = new List<PropertyDetail>();
 }

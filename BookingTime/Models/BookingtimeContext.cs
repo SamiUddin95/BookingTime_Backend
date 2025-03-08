@@ -25,6 +25,8 @@ public partial class BookingtimeContext : DbContext
 
     public virtual DbSet<HotelType> HotelTypes { get; set; }
 
+    public virtual DbSet<PropertyAmenity> PropertyAmenities { get; set; }
+
     public virtual DbSet<PropertyDetail> PropertyDetails { get; set; }
 
     public virtual DbSet<Rating> Ratings { get; set; }
@@ -85,6 +87,14 @@ public partial class BookingtimeContext : DbContext
                 .HasColumnName("Hotel_Type");
         });
 
+        modelBuilder.Entity<PropertyAmenity>(entity =>
+        {
+            entity.ToTable("Property_Amenities");
+
+            entity.Property(e => e.AmenityId).HasColumnName("Amenity_Id");
+            entity.Property(e => e.PropertyDetailId).HasColumnName("Property_Detail_Id");
+        });
+
         modelBuilder.Entity<PropertyDetail>(entity =>
         {
             entity.ToTable("PROPERTY_DETAILS");
@@ -93,6 +103,7 @@ public partial class BookingtimeContext : DbContext
             entity.Property(e => e.Amenities)
                 .HasMaxLength(200)
                 .HasColumnName("AMENITIES");
+            entity.Property(e => e.AmenitiesId).HasColumnName("Amenities_Id");
             entity.Property(e => e.BasePrice)
                 .HasColumnType("decimal(18, 2)")
                 .HasColumnName("BASE_PRICE");
@@ -123,15 +134,16 @@ public partial class BookingtimeContext : DbContext
             entity.Property(e => e.PostalCode)
                 .HasMaxLength(100)
                 .HasColumnName("POSTAL_CODE");
-            entity.Property(e => e.Rating)
-                .HasColumnType("decimal(18, 2)")
-                .HasColumnName("RATING");
+            entity.Property(e => e.RatingId).HasColumnName("Rating_Id");
             entity.Property(e => e.RoomArea)
                 .HasMaxLength(50)
                 .HasColumnName("ROOM_AREA");
             entity.Property(e => e.ShortDesc).HasColumnName("SHORT_DESC");
             entity.Property(e => e.StateId).HasColumnName("STATE_ID");
             entity.Property(e => e.Street).HasColumnName("STREET");
+            entity.Property(e => e.Thumbnail)
+                .IsUnicode(false)
+                .HasColumnName("THUMBNAIL");
             entity.Property(e => e.TotalFloor)
                 .HasMaxLength(50)
                 .HasColumnName("TOTAL_FLOOR");
@@ -142,6 +154,27 @@ public partial class BookingtimeContext : DbContext
                 .HasMaxLength(10)
                 .IsFixedLength()
                 .HasColumnName("USAGE_TYPE");
+
+            entity.HasOne(d => d.City).WithMany(p => p.PropertyDetails)
+                .HasForeignKey(d => d.CityId)
+                .HasConstraintName("FK_PROPERTY_City");
+
+            entity.HasOne(d => d.Country).WithMany(p => p.PropertyDetails)
+                .HasForeignKey(d => d.CountryId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_PROPERTY_COUNTRY");
+
+            entity.HasOne(d => d.ListType).WithMany(p => p.PropertyDetails)
+                .HasForeignKey(d => d.ListTypeId)
+                .HasConstraintName("FK_PROPERTY_Listtype");
+
+            entity.HasOne(d => d.Rating).WithMany(p => p.PropertyDetails)
+                .HasForeignKey(d => d.RatingId)
+                .HasConstraintName("FK_PROPERTY_DETAILS_Rating");
+
+            entity.HasOne(d => d.State).WithMany(p => p.PropertyDetails)
+                .HasForeignKey(d => d.StateId)
+                .HasConstraintName("FK_PROPERTY_State");
         });
 
         modelBuilder.Entity<Rating>(entity =>

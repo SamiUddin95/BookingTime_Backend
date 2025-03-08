@@ -11,7 +11,8 @@
             public int? priceRangeFrom { get; set; }
             public int? priceRangeTo { get; set; }
             public int? ratingId { get; set; }
-            public int? amenities { get; set; }
+            public List<amenity> amenities { get; set; }
         }
     }
+    
 }

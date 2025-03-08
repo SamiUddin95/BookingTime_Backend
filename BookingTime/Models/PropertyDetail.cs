@@ -45,11 +45,25 @@ public partial class PropertyDetail
 
     public decimal? Discount { get; set; }
 
-    public decimal? Rating { get; set; }
-
     public string? PolicyDesc { get; set; }
 
     public string? CancellationOption { get; set; }
 
     public decimal? Charges { get; set; }
+
+    public string? Thumbnail { get; set; }
+
+    public int? AmenitiesId { get; set; }
+
+    public int? RatingId { get; set; }
+
+    public virtual City? City { get; set; }
+
+    public virtual Country? Country { get; set; }
+
+    public virtual HotelType? ListType { get; set; }
+
+    public virtual Rating? Rating { get; set; }
+
+    public virtual State? State { get; set; }
 }

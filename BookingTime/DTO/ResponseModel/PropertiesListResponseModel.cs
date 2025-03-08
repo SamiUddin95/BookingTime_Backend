@@ -19,11 +19,17 @@
         public string countryName { get; set; }
         public string stateName { get; set; }
         public string rating { get; set; }
-        public string amenities { get; set; }
+        public List<amenities> amenities { get; set; }
+
         public class PropertyResponseModeldetails
         {
             public List<PropertiesListResponseModel> propertydetails { get; set; }
             public int TotalCount { get; set; }
         }
+    }
+    public class amenities
+    {
+        public int id { get; set; }
+        public string name { get; set; }
     }
 }

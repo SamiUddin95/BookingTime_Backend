@@ -13,5 +13,7 @@ public partial class Country
 
     public virtual ICollection<City> Cities { get; } = new List<City>();
 
+    public virtual ICollection<PropertyDetail> PropertyDetails { get; } = new List<PropertyDetail>();
+
     public virtual ICollection<State> States { get; } = new List<State>();
 }
