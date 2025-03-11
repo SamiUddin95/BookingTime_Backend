@@ -19,6 +19,8 @@
         public string countryName { get; set; }
         public string stateName { get; set; }
         public string rating { get; set; }
+        public string thumbnail { get; set; }
+        public string featuredImages { get; set; }
         public List<amenities> amenities { get; set; }
 
         public class PropertyResponseModeldetails

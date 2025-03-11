@@ -29,6 +29,8 @@ public partial class BookingtimeContext : DbContext
 
     public virtual DbSet<PropertyDetail> PropertyDetails { get; set; }
 
+    public virtual DbSet<PropertyReview> PropertyReviews { get; set; }
+
     public virtual DbSet<Rating> Ratings { get; set; }
 
     public virtual DbSet<State> States { get; set; }
@@ -119,6 +121,9 @@ public partial class BookingtimeContext : DbContext
             entity.Property(e => e.Discount)
                 .HasColumnType("decimal(18, 2)")
                 .HasColumnName("DISCOUNT");
+            entity.Property(e => e.Images)
+                .IsUnicode(false)
+                .HasColumnName("IMAGES");
             entity.Property(e => e.Latitude)
                 .HasMaxLength(100)
                 .HasColumnName("LATITUDE");
@@ -175,6 +180,26 @@ public partial class BookingtimeContext : DbContext
             entity.HasOne(d => d.State).WithMany(p => p.PropertyDetails)
                 .HasForeignKey(d => d.StateId)
                 .HasConstraintName("FK_PROPERTY_State");
+        });
+
+        modelBuilder.Entity<PropertyReview>(entity =>
+        {
+            entity.ToTable("PROPERTY_REVIEWS");
+
+            entity.Property(e => e.Id).HasColumnName("ID");
+            entity.Property(e => e.CreatedOn)
+                .HasColumnType("datetime")
+                .HasColumnName("CREATED_ON");
+            entity.Property(e => e.PropertyId).HasColumnName("PROPERTY_ID");
+            entity.Property(e => e.RatingId).HasColumnName("RATING_ID");
+            entity.Property(e => e.Review)
+                .HasMaxLength(250)
+                .IsUnicode(false)
+                .HasColumnName("REVIEW");
+            entity.Property(e => e.UpdatedOn)
+                .HasColumnType("datetime")
+                .HasColumnName("UPDATED_ON");
+            entity.Property(e => e.UserId).HasColumnName("USER_ID");
         });
 
         modelBuilder.Entity<Rating>(entity =>

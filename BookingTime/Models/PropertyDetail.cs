@@ -53,6 +53,8 @@ public partial class PropertyDetail
 
     public string? Thumbnail { get; set; }
 
+    public string? Images { get; set; }
+
     public int? AmenitiesId { get; set; }
 
     public int? RatingId { get; set; }

@@ -17,6 +17,9 @@ using System.Data;
 using BookingTime.DTO.RequestModel;
 using BookingTime.DTO.ResponseModel;
 using static BookingTime.DTO.ResponseModel.PropertiesListResponseModel;
+using Microsoft.AspNetCore.Mvc.ApplicationModels;
+using static BookingTime.DTO.RequestModel.PropertiesFilterRequestModel;
+using static BookingTime.DTO.ResponseModel.PropertyReviewsResponseModel;
 
 namespace BookingTime.Controllers
 {
@@ -128,12 +131,12 @@ namespace BookingTime.Controllers
             }
         }
 
-        private async Task<string> SaveImageAsync(IFormFile? file)
+        private async Task<string> SaveImageAsync(IFormFile? file, string folder = "")
         {
             if (file == null || file.Length == 0)
                 return string.Empty;
 
-            string folderPath = _configuration["PropertyImagesPath"];
+            string folderPath = _configuration["PropertyImagesPath"] + folder;
             if (!Directory.Exists(folderPath))
             {
                 Directory.CreateDirectory(folderPath);
@@ -157,6 +160,7 @@ namespace BookingTime.Controllers
             {
                 BookingtimeContext _context = new BookingtimeContext(_configuration);
                 string amenities = null;
+                string hotelTypes = null;
 
                 string? ConnectionString = _configuration.GetConnectionString("BookingTimeConnection");
                 List<PropertiesListResponseModel> propertylist = new List<PropertiesListResponseModel>();
@@ -172,6 +176,12 @@ namespace BookingTime.Controllers
                    ? string.Join(",", request.Details.amenities.Select(a => a.AmenitiesId))
                    : null;
                 }
+                if (request.Details.hotelTypes != null)
+                {
+                    amenities = request.Details.hotelTypes != null && request.Details.hotelTypes.Any()
+                   ? string.Join(",", request.Details.hotelTypes.Select(h => h.hotelTypeId))
+                   : null;
+                }
 
                 using (SqlCommand cmd = con.CreateCommand())
                 {
@@ -181,7 +191,8 @@ namespace BookingTime.Controllers
 
                     cmd.Parameters.AddRange(new[]
                  {
-                 new SqlParameter("@HotelTypeId", request.Details.hotelTypeId),
+                 new SqlParameter("@HotelTypeId", hotelTypes),
+                 new SqlParameter("@HotelId", null),
                  new SqlParameter("@PriceRangeFrom", request.Details.priceRangeFrom),
                  new SqlParameter("@PriceRangeTo", request.Details.priceRangeTo),
                  new SqlParameter("@RatingId", request.Details.ratingId),
@@ -217,6 +228,8 @@ namespace BookingTime.Controllers
                             countryName = row["CountryName"] != DBNull.Value ? row["CountryName"].ToString() : string.Empty,
                             stateName = row["StateName"] != DBNull.Value ? row["StateName"].ToString() : string.Empty,
                             rating = row["Rating"] != DBNull.Value ? row["Rating"].ToString() : string.Empty,
+                            thumbnail = row["Thumbnail"] != DBNull.Value ? row["Thumbnail"].ToString() : string.Empty,
+                            featuredImages = row["FeaturedImages"] != DBNull.Value ? row["FeaturedImages"].ToString() : string.Empty,
                             amenities = _context.PropertyAmenities
                             .Where(pa => pa.PropertyDetailId == Convert.ToInt32(row["ID"]))
                             .Join(_context.Amenities,
@@ -246,5 +259,341 @@ namespace BookingTime.Controllers
 
             }
         }
+
+        [HttpGet("/api/GetListingPropertyById")]
+        [EnableCors("AllowAngularApp")]
+        public async Task<PropertiesListResponseModel> GetListingPropertyByIdAsync(int Id)
+        {
+
+            try
+            {
+                BookingtimeContext _context = new BookingtimeContext(_configuration);
+
+                string? ConnectionString = _configuration.GetConnectionString("BookingTimeConnection");
+                PropertiesListResponseModel propertylist = new PropertiesListResponseModel();
+                SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder(ConnectionString);
+                builder.ConnectTimeout = 2500;
+                SqlConnection con = new SqlConnection(builder.ConnectionString);
+                System.Data.Common.DbDataReader sqlReader;
+                con.Open();
+
+
+                using (SqlCommand cmd = con.CreateCommand())
+                {
+                    cmd.CommandText = "Sp_PropertyList";
+                    cmd.CommandType = System.Data.CommandType.StoredProcedure;
+                    cmd.CommandTimeout = 0;
+
+                    cmd.Parameters.AddRange(new[]
+                 {
+                 new SqlParameter("@HotelTypeId", null),
+                 new SqlParameter("@HotelId", Id),
+                 new SqlParameter("@PriceRangeFrom", null),
+                 new SqlParameter("@PriceRangeTo", null),
+                 new SqlParameter("@RatingId", null),
+                 new SqlParameter("@Amenities", null),
+
+                 new SqlParameter("@Page",null),
+                 new SqlParameter("@PageSize", null)
+                });
+
+                    var adapter = new SqlDataAdapter(cmd);
+                    var ds = new DataSet();
+                    adapter.Fill(ds);
+                    DataTable count = ds.Tables[0];
+                    DataTable list = ds.Tables[1];
+
+                    propertylist = list.AsEnumerable()
+                        .Select(row => new PropertiesListResponseModel
+                        {
+                            id = row["ID"] != DBNull.Value ? Convert.ToInt32(row["ID"]) : 0,
+                            listName = row["LIST_NAME"] != DBNull.Value ? row["LIST_NAME"].ToString() : string.Empty,
+                            listTypeDescription = row["ListType Description"] != DBNull.Value ? row["ListType Description"].ToString() : string.Empty,
+                            usageType = row["USAGE_TYPE"] != DBNull.Value ? row["USAGE_TYPE"].ToString() : string.Empty,
+                            shortDesc = row["SHORT_DESC"] != DBNull.Value ? row["SHORT_DESC"].ToString() : string.Empty,
+                            policyDesc = row["POLICY_DESC"] != DBNull.Value ? row["POLICY_DESC"].ToString() : string.Empty,
+                            totalFloor = row["TOTAL_FLOOR"] != DBNull.Value ? row["TOTAL_FLOOR"].ToString() : string.Empty,
+                            totalRoom = row["TOTAL_ROOM"] != DBNull.Value ? row["TOTAL_ROOM"].ToString() : string.Empty,
+                            roomArea = row["ROOM_AREA"] != DBNull.Value ? row["ROOM_AREA"].ToString() : string.Empty,
+                            basePrice = row["BASE_PRICE"] != DBNull.Value ? Convert.ToDecimal(row["BASE_PRICE"]) : 0m,
+                            charges = row["CHARGES"] != DBNull.Value ? Convert.ToDecimal(row["CHARGES"]) : 0m,
+                            discount = row["DISCOUNT"] != DBNull.Value ? Convert.ToDecimal(row["DISCOUNT"]) : 0m,
+                            currencyId = row["CURRENCY_ID"] != DBNull.Value ? Convert.ToInt32(row["CURRENCY_ID"]) : 0,
+                            cityName = row["CityName"] != DBNull.Value ? row["CityName"].ToString() : string.Empty,
+                            countryName = row["CountryName"] != DBNull.Value ? row["CountryName"].ToString() : string.Empty,
+                            stateName = row["StateName"] != DBNull.Value ? row["StateName"].ToString() : string.Empty,
+                            rating = row["Rating"] != DBNull.Value ? row["Rating"].ToString() : string.Empty,
+                            thumbnail = row["Thumbnail"] != DBNull.Value ? row["Thumbnail"].ToString() : string.Empty,
+                            featuredImages = row["FeaturedImages"] != DBNull.Value ? row["FeaturedImages"].ToString() : string.Empty,
+                            amenities = _context.PropertyAmenities
+                            .Where(pa => pa.PropertyDetailId == Convert.ToInt32(row["ID"]))
+                            .Join(_context.Amenities,
+                                  pa => pa.AmenityId,
+                                  a => a.Id,
+                                  (pa, a) => new amenities
+                                  {
+                                      id = a.Id,
+                                      name = a.Amenities
+                                  })
+                            .ToList()
+                        }).FirstOrDefault();
+                    return propertylist;
+
+
+                }
+
+            }
+            catch (ValidationException vx)
+            {
+                throw new ValidationException(vx.Message != null ? vx.Message.ToString() : "Validation Error");
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.InnerException != null ? ex.InnerException.ToString() : "Internal Server Error");
+
+            }
+        }
+
+        [HttpGet("/api/GetFeaturedHotel")]
+        [EnableCors("AllowAngularApp")]
+        public async Task<List<FeaturedHotelsResponseModel>> GetFeaturedHotelsAysnc()
+        {
+            try
+            {
+                int Records = Convert.ToInt32(_configuration["GetFeaturedHotelRecords"]);
+                if (Records == 0)
+                    Records = 4;
+
+                List<FeaturedHotelsResponseModel> properties = new List<FeaturedHotelsResponseModel>();
+                BookingtimeContext _context = new BookingtimeContext(_configuration);
+                string? ConnectionString = _configuration.GetConnectionString("BookingTimeConnection");
+                using (SqlConnection con = new SqlConnection(ConnectionString))
+                {
+                    using (SqlCommand cmd = new SqlCommand("Sp_GetFeaturedHotels", con))
+                    {
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        cmd.Parameters.Add(new SqlParameter("@count", Records));
+
+                        con.Open();
+                        using (SqlDataReader reader = await cmd.ExecuteReaderAsync())
+                        {
+                            while (await reader.ReadAsync())
+                            {
+                                properties.Add(new FeaturedHotelsResponseModel
+                                {
+                                    ID = Convert.ToInt32(reader["ID"]),
+                                    ListName = reader["LIST_NAME"].ToString(),
+                                    ListTypeDescription = reader["ListType Description"].ToString(),
+                                    UsageType = reader["USAGE_TYPE"].ToString(),
+                                    ShortDesc = reader["SHORT_DESC"].ToString(),
+                                    PolicyDesc = reader["POLICY_DESC"].ToString(),
+                                    TotalFloor = reader["TOTAL_FLOOR"].ToString(),
+                                    TotalRoom = reader["TOTAL_ROOM"].ToString(),
+                                    RoomArea = reader["ROOM_AREA"].ToString(),
+                                    BasePrice = Convert.ToDecimal(reader["BASE_PRICE"]),
+                                    Charges = Convert.ToDecimal(reader["CHARGES"]),
+                                    Discount = Convert.ToDecimal(reader["DISCOUNT"]),
+                                    CurrencyId = Convert.ToInt32(reader["CURRENCY_ID"]),
+                                    CityName = reader["CityName"].ToString(),
+                                    CountryName = reader["CountryName"].ToString(),
+                                    StateName = reader["StateName"].ToString(),
+                                    Rating = reader["Rating"].ToString(),
+                                    Thumbnail = reader["Thumbnail"].ToString(),
+                                    amenity = _context.PropertyAmenities
+                                .Where(pa => pa.PropertyDetailId == Convert.ToInt32(reader["ID"]))
+                                .Join(_context.Amenities,
+                                      pa => pa.AmenityId,
+                                      a => a.Id,
+                                      (pa, a) => new amenity1
+                                      {
+                                          amenityId = a.Id,
+                                          amenityName = a.Amenities
+                                      })
+                                .ToList()
+                                });
+                            }
+                        }
+                    }
+                }
+                return properties;
+            }
+            catch (ValidationException vx)
+            {
+                throw new ValidationException(vx.Message != null ? vx.Message.ToString() : "Validation Error");
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.InnerException != null ? ex.InnerException.ToString() : "Internal Server Error");
+
+            }
+        }
+
+        [HttpPost("/api/AddPropertyReview")]
+        [EnableCors("AllowAngularApp")]
+        public async Task<string> AddPropertyReviewAysnc([FromBody] AddPropertyReviewRequestModel req)
+        {
+            try
+            {
+                BookingtimeContext _context = new BookingtimeContext(_configuration);
+                var propertyDetails = _context.PropertyDetails.Where(x => x.Id == req.propertyId).FirstOrDefault();
+                if (propertyDetails == null)
+                    throw new Exception("Property not found");
+
+                var propertyReview = new PropertyReview()
+                {
+                    PropertyId = req.propertyId,
+                    UserId = req.userId,
+                    RatingId = req.ratingId,
+                    Review = req.review,
+                    CreatedOn = DateTime.Now
+                };
+                _context.PropertyReviews.Add(propertyReview);
+                _context.SaveChanges();
+
+                return $@"Successfully added";
+            }
+            catch (ValidationException vx)
+            {
+                throw new ValidationException(vx.Message != null ? vx.Message.ToString() : "Validation Error");
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.InnerException != null ? ex.InnerException.ToString() : "Internal Server Error");
+
+            }
+        }
+
+
+        [HttpPut("/api/UpdatePropertyReview")]
+        [EnableCors("AllowAngularApp")]
+        public async Task<string> UpdatePropertyReviewAysnc([FromBody] UpdatePropertyReviewRequestModel req)
+        {
+            try
+            {
+                BookingtimeContext _context = new BookingtimeContext(_configuration);
+                var propertyReview = _context.PropertyReviews.Where(x => x.Id == req.reviewId).FirstOrDefault();
+                if (propertyReview == null)
+                    throw new Exception("propertyReview not found");
+
+                propertyReview.RatingId = req.ratingId;
+                propertyReview.Review = req.review;
+                propertyReview.UpdatedOn = DateTime.Now;
+
+
+                _context.PropertyReviews.Update(propertyReview);
+                _context.SaveChanges();
+
+                return $@"Successfully updated";
+            }
+            catch (ValidationException vx)
+            {
+                throw new ValidationException(vx.Message != null ? vx.Message.ToString() : "Validation Error");
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.InnerException != null ? ex.InnerException.ToString() : "Internal Server Error");
+
+            }
+        }
+
+
+        [HttpPost("/api/AddPropertyFeaturedImages")]
+        [EnableCors("AllowAngularApp")]
+        public async Task<bool> AddPropertyFeaturedImagesAysnc([FromForm] PropertyFeaturedImagesRequestModel req)
+        {
+            try
+            {
+                BookingtimeContext _context = new BookingtimeContext(_configuration);
+                List<string> imagePaths = new List<string>();
+                var propertyDetails = _context.PropertyDetails.Where(x => x.Id == req.propertyId).FirstOrDefault();
+                if (propertyDetails == null)
+                    throw new Exception("Property not found");
+
+                foreach (var img in req.images)
+                {
+                    string path = await SaveImageAsync(img, propertyDetails.ListName.ToLower().Trim());
+                    imagePaths.Add(path);
+                }
+
+                propertyDetails.Images = string.Join(",", imagePaths);
+                _context.PropertyDetails.Update(propertyDetails);
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch (ValidationException vx)
+            {
+                throw new ValidationException(vx.Message != null ? vx.Message.ToString() : "Validation Error");
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.InnerException != null ? ex.InnerException.ToString() : "Internal Server Error");
+
+            }
+        }
+
+        [HttpPost("/api/GetReviewList")]
+        [EnableCors("AllowAngularApp")]
+        public async Task<PropertyReviewsResponseModeldetails> GetReviewListAysnc([FromBody] ReviewListRequestModel req)
+        {
+            try
+            {
+
+
+                List<PropertyReviewsResponseModel> reviews = new List<PropertyReviewsResponseModel>();
+                PropertyReviewsResponseModeldetails model = new PropertyReviewsResponseModeldetails();
+                BookingtimeContext _context = new BookingtimeContext(_configuration);
+                string? ConnectionString = _configuration.GetConnectionString("BookingTimeConnection");
+                SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder(ConnectionString);
+                builder.ConnectTimeout = 2500;
+                SqlConnection con = new SqlConnection(builder.ConnectionString);
+                System.Data.Common.DbDataReader sqlReader;
+                con.Open();
+                using (SqlCommand cmd = con.CreateCommand())
+                {
+                    cmd.CommandText = "Sp_ReviewList";
+                    cmd.CommandType = System.Data.CommandType.StoredProcedure;
+                    cmd.CommandTimeout = 0;
+
+                    cmd.Parameters.AddRange(new[]
+                 {
+                 new SqlParameter("@propertyId", req.propertyId),
+                 new SqlParameter("@Page",req.PaginationInfo.Page),
+                 new SqlParameter("@PageSize", req.PaginationInfo.RowsPerPage)
+                });
+
+                    var adapter = new SqlDataAdapter(cmd);
+                    var ds = new DataSet();
+                    adapter.Fill(ds);
+                    DataTable count = ds.Tables[0];
+                    DataTable list = ds.Tables[1];
+
+                    reviews = list.AsEnumerable()
+                        .Select(row => new PropertyReviewsResponseModel
+                        {
+                            reviewId = Convert.ToInt32(row["Id"]),
+                            userName = row["User Name"].ToString(),
+                            rating = Convert.ToInt32(row["Ratings"].ToString()),
+                            review = row["Review"].ToString(),
+                            reviewDate = Convert.ToDateTime(row["Review Date"].ToString())
+                        }).ToList();
+                    model.reviewdetails = reviews;
+                    model.TotalCount = Convert.ToInt32(count.Rows[0]["TotalCount"]);
+
+                    return model;
+                }
+
+            }
+            catch (ValidationException vx)
+            {
+                throw new ValidationException(vx.Message != null ? vx.Message.ToString() : "Validation Error");
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.InnerException != null ? ex.InnerException.ToString() : "Internal Server Error");
+
+            }
+        }
+
+
     }
 }
