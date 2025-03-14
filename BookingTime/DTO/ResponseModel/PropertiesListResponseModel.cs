@@ -22,6 +22,7 @@
         public string thumbnail { get; set; }
         public string featuredImages { get; set; }
         public List<amenities> amenities { get; set; }
+        public List<propertyRooms> rooms { get; set; }
 
         public class PropertyResponseModeldetails
         {
@@ -33,5 +34,15 @@
     {
         public int id { get; set; }
         public string name { get; set; }
+    }
+    public class propertyRooms
+    {
+        public long id { get; set; }
+        public string name { get; set; }
+        public decimal price { get; set; }
+        public decimal discount { get; set; }
+        public int additionalInfoId { get; set; }
+        public string additionalInfo { get; set; }
+        public string thumbnail { get; set; }
     }
 }

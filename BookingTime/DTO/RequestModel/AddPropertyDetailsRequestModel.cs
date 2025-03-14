@@ -26,12 +26,22 @@
         public IFormFile? Thumbnail { get; set; }
         public int? RatingId { get; set; }
         public List<amenity> Amenities { get; set; }
+        public List<room> rooms { get; set; }
 
     }
 
     public class amenity
     {
         public int? AmenitiesId { get; set; }
+
+    }
+    public class room
+    {
+        public string name { get; set; }
+        public decimal price { get; set; }
+        public decimal discount { get; set; }
+        public int additionalInfoId { get; set; }
+        public IFormFile Image { get; set; }
 
     }
 

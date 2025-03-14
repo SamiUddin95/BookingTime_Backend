@@ -65,6 +65,8 @@ public partial class PropertyDetail
 
     public virtual HotelType? ListType { get; set; }
 
+    public virtual ICollection<PropertyRoom> PropertyRooms { get; } = new List<PropertyRoom>();
+
     public virtual Rating? Rating { get; set; }
 
     public virtual State? State { get; set; }

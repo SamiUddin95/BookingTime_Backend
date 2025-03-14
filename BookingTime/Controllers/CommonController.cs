@@ -185,5 +185,34 @@ namespace BookingTime.Controllers
             }
 
         }
+
+        [HttpGet("/api/GetAllAdditionalInfoList")]
+        public async Task<IActionResult> GetAllAdditionalInfoListAsync()
+        {
+            try
+            {
+                var connectionString = _configuration.GetConnectionString("BookingTimeConnection");
+
+                using (BookingtimeContext _context = new BookingtimeContext(_configuration))
+                {
+
+                    var AdditionalInfo = await _context.AdditionalInfos.Select(x => new
+                    {
+                        Id = x.Id,
+                        Name = x.Name,
+
+                    }).ToListAsync();
+                    return Ok(AdditionalInfo);
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Internal Server Error", error = ex.Message });
+            }
+
+        }
+
+
+
     }
 }

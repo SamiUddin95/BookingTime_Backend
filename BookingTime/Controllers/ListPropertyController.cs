@@ -31,7 +31,7 @@ namespace BookingTime.Controllers
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
         }
 
-        [HttpGet("/api/GetListOFProperty")]
+/*        [HttpGet("/api/GetListOFProperty")]
         [EnableCors("AllowAngularApp")]
         public object GetListOFProperty()
         {
@@ -53,7 +53,7 @@ namespace BookingTime.Controllers
             bTMContext.PropertyDetails.Add(propertyDetail);
             bTMContext.SaveChanges();
             return Ok(new { code = 200, msg = "Property added successfully!" });
-        }
+        }*/
 
         [HttpPost("/api/AddListingProperty")]
         [EnableCors("AllowAngularApp")]
@@ -108,20 +108,47 @@ namespace BookingTime.Controllers
                 _context.PropertyDetails.Add(property);
                 await _context.SaveChangesAsync();
 
-
                 if (request.Amenities != null && request.Amenities.Count > 0)
                 {
-                    var amenitiesList = request.Amenities
-                        .Where(a => a.AmenitiesId.HasValue)
-                        .Select(a => new PropertyAmenity
+                    var amenitiesList = new List<PropertyAmenity>();
+
+                    foreach (var amenity in request.Amenities)
+                    {
+                        if (amenity.AmenitiesId.HasValue)
                         {
-                            PropertyDetailId = property.Id,
-                            AmenityId = a.AmenitiesId.Value
-                        }).ToList();
+                            amenitiesList.Add(new PropertyAmenity
+                            {
+                                PropertyDetailId = property.Id,
+                                AmenityId = amenity.AmenitiesId.Value
+                            });
+                        }
+                    }
 
                     _context.PropertyAmenities.AddRange(amenitiesList);
                     await _context.SaveChangesAsync();
                 }
+
+                if (request.rooms != null && request.rooms.Count > 0)
+                {
+                    var rooms = new List<PropertyRoom>();
+
+                    foreach (var room in request.rooms)
+                    {
+                        rooms.Add(new PropertyRoom
+                        {
+                            PropertyId = property.Id,
+                            Name = room.name,
+                            Price = room.price,
+                            Discount = room.discount,
+                            AdditionalInfoId = room.additionalInfoId,
+                            Image = await SaveImageAsync(room.Image, $@"{property.ListName}\Rooms")
+                        });
+                    }
+
+                    _context.PropertyRooms.AddRange(rooms);
+                    await _context.SaveChangesAsync();
+                }
+
 
                 return Ok(new { Message = $@"Successfully Created : PropertyId : {property.Id}", sucess = true });
             }
@@ -149,7 +176,9 @@ namespace BookingTime.Controllers
                 await file.CopyToAsync(stream);
             }
 
-            return $"{filePath}";
+            string relativePath = filePath.Substring(filePath.IndexOf("assets", StringComparison.OrdinalIgnoreCase));
+
+            return relativePath.Replace("\\", "/");
         }
 
         [HttpPost("/api/GetListingPropertyList")]
@@ -239,6 +268,22 @@ namespace BookingTime.Controllers
                                   {
                                       id = a.Id,
                                       name = a.Amenities
+                                  })
+                            .ToList(),
+                            rooms = _context.PropertyRooms
+                            .Where(pr => pr.PropertyId == Convert.ToInt32(row["ID"]))
+                            .Join(_context.AdditionalInfos,
+                                  ai => ai.AdditionalInfoId,
+                                   a=> a.Id,
+                                  (pr, a) => new propertyRooms
+                                  {
+                                      id = pr.Id,
+                                      name = pr.Name,
+                                      price = pr.Price,
+                                      discount = pr.Discount,
+                                      additionalInfoId = a.Id,
+                                      additionalInfo = a.Name,
+                                      thumbnail = pr.Image,
                                   })
                             .ToList()
                         }).ToList();
@@ -430,7 +475,7 @@ namespace BookingTime.Controllers
 
         [HttpPost("/api/AddPropertyReview")]
         [EnableCors("AllowAngularApp")]
-        public async Task<string> AddPropertyReviewAysnc([FromBody] AddPropertyReviewRequestModel req)
+        public async Task<IActionResult> AddPropertyReviewAysnc([FromBody] AddPropertyReviewRequestModel req)
         {
             try
             {
@@ -450,7 +495,7 @@ namespace BookingTime.Controllers
                 _context.PropertyReviews.Add(propertyReview);
                 _context.SaveChanges();
 
-                return $@"Successfully added";
+                return Ok(new { message = $@"Successfully added" });
             }
             catch (ValidationException vx)
             {
@@ -582,6 +627,51 @@ namespace BookingTime.Controllers
                     return model;
                 }
 
+            }
+            catch (ValidationException vx)
+            {
+                throw new ValidationException(vx.Message != null ? vx.Message.ToString() : "Validation Error");
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.InnerException != null ? ex.InnerException.ToString() : "Internal Server Error");
+
+            }
+        }
+
+        [HttpGet("/api/GetPropertyRatingPercentage/{PropertyId}")]
+        [EnableCors("AllowAngularApp")]
+        public async Task<IActionResult> GetPropertyRatingPercentageAysnc(int PropertyId)
+        {
+            try
+            {
+                BookingtimeContext _context = new BookingtimeContext(_configuration);
+                var propertyId = new SqlParameter("@PropertyId", PropertyId);
+                var results = new List<RatingPercentageResponseModel>();
+
+                using (var command = _context.Database.GetDbConnection().CreateCommand())
+                {
+                    command.CommandText = "EXEC GetPropertyRatingPercentage @PropertyId";
+                    command.Parameters.Add(propertyId);
+                    command.CommandType = System.Data.CommandType.Text;
+
+                    _context.Database.OpenConnection();
+
+                    using (var reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            results.Add(new RatingPercentageResponseModel
+                            {
+                                Rating = reader.GetString(0),
+                                Percentage = reader.GetDecimal(1)
+                            });
+                        }
+                    }
+                }
+
+
+                return Ok(results);
             }
             catch (ValidationException vx)
             {

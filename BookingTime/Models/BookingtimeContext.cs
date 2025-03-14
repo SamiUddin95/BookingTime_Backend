@@ -17,13 +17,23 @@ public partial class BookingtimeContext : DbContext
     {
     }
 
+    public virtual DbSet<AdditionalInfo> AdditionalInfos { get; set; }
+
     public virtual DbSet<Amenity> Amenities { get; set; }
+
+    public virtual DbSet<CarDetail> CarDetails { get; set; }
+
+    public virtual DbSet<CarImage> CarImages { get; set; }
 
     public virtual DbSet<City> Cities { get; set; }
 
     public virtual DbSet<Country> Countries { get; set; }
 
+    public virtual DbSet<FuelType> FuelTypes { get; set; }
+
     public virtual DbSet<HotelType> HotelTypes { get; set; }
+
+    public virtual DbSet<OdometerReading> OdometerReadings { get; set; }
 
     public virtual DbSet<PropertyAmenity> PropertyAmenities { get; set; }
 
@@ -31,11 +41,23 @@ public partial class BookingtimeContext : DbContext
 
     public virtual DbSet<PropertyReview> PropertyReviews { get; set; }
 
+    public virtual DbSet<PropertyRoom> PropertyRooms { get; set; }
+
     public virtual DbSet<Rating> Ratings { get; set; }
+
+    public virtual DbSet<RoomImage> RoomImages { get; set; }
+
+    public virtual DbSet<SeatbeltType> SeatbeltTypes { get; set; }
 
     public virtual DbSet<State> States { get; set; }
 
     public virtual DbSet<User> Users { get; set; }
+
+    public virtual DbSet<VehicleCondition> VehicleConditions { get; set; }
+
+    public virtual DbSet<VehicleMake> VehicleMakes { get; set; }
+
+    public virtual DbSet<VehicleYear> VehicleYears { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
@@ -43,11 +65,109 @@ public partial class BookingtimeContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<AdditionalInfo>(entity =>
+        {
+            entity.ToTable("ADDITIONAL_INFO");
+
+            entity.Property(e => e.Id).HasColumnName("ID");
+            entity.Property(e => e.Name)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("NAME");
+        });
+
         modelBuilder.Entity<Amenity>(entity =>
         {
             entity.Property(e => e.Amenities)
                 .HasMaxLength(50)
                 .IsUnicode(false);
+        });
+
+        modelBuilder.Entity<CarDetail>(entity =>
+        {
+            entity.ToTable("CAR_DETAILS");
+
+            entity.Property(e => e.EndDate)
+                .HasColumnType("date")
+                .HasColumnName("End_Date");
+            entity.Property(e => e.Features)
+                .HasMaxLength(50)
+                .IsUnicode(false);
+            entity.Property(e => e.FuelTypeId).HasColumnName("FuelType_Id");
+            entity.Property(e => e.Location).HasMaxLength(255);
+            entity.Property(e => e.MakeId).HasColumnName("Make_Id");
+            entity.Property(e => e.MileageLimit).HasColumnName("Mileage_Limit");
+            entity.Property(e => e.MobileNumber1)
+                .HasMaxLength(15)
+                .IsUnicode(false);
+            entity.Property(e => e.MobileNumber2)
+                .HasMaxLength(15)
+                .IsUnicode(false);
+            entity.Property(e => e.Model)
+                .HasMaxLength(255)
+                .IsUnicode(false);
+            entity.Property(e => e.OdometerId).HasColumnName("Odometer_Id");
+            entity.Property(e => e.Photos)
+                .HasMaxLength(255)
+                .IsUnicode(false);
+            entity.Property(e => e.SeatbeltTypeId).HasColumnName("Seatbelt_type_Id");
+            entity.Property(e => e.StartDate)
+                .HasColumnType("date")
+                .HasColumnName("Start_Date");
+            entity.Property(e => e.VehicleConditionId).HasColumnName("Vehicle_Condition_Id");
+            entity.Property(e => e.VehicleValue)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("Vehicle_Value");
+            entity.Property(e => e.Vin).HasColumnName("VIN");
+            entity.Property(e => e.YearId).HasColumnName("Year_Id");
+
+            entity.HasOne(d => d.FuelType).WithMany(p => p.CarDetails)
+                .HasForeignKey(d => d.FuelTypeId)
+                .HasConstraintName("FK_CAR_DETAILS_Fuel_Type");
+
+            entity.HasOne(d => d.Make).WithMany(p => p.CarDetails)
+                .HasForeignKey(d => d.MakeId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_CAR_DETAILS_VehicleMake");
+
+            entity.HasOne(d => d.Odometer).WithMany(p => p.CarDetails)
+                .HasForeignKey(d => d.OdometerId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_CAR_DETAILS_Odometer");
+
+            entity.HasOne(d => d.SeatbeltType).WithMany(p => p.CarDetails)
+                .HasForeignKey(d => d.SeatbeltTypeId)
+                .HasConstraintName("FK_CAR_DETAILS_SeatbeltType");
+
+            entity.HasOne(d => d.VehicleCondition).WithMany(p => p.CarDetails)
+                .HasForeignKey(d => d.VehicleConditionId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_CAR_DETAILS_VehicleCondition");
+
+            entity.HasOne(d => d.Year).WithMany(p => p.CarDetails)
+                .HasForeignKey(d => d.YearId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_CarDetails_VehicleYear");
+        });
+
+        modelBuilder.Entity<CarImage>(entity =>
+        {
+            entity.ToTable("CAR_IMAGES");
+
+            entity.Property(e => e.Id)
+                .ValueGeneratedNever()
+                .HasColumnName("ID");
+            entity.Property(e => e.CarId).HasColumnName("CAR_ID");
+            entity.Property(e => e.ImagePath)
+                .HasMaxLength(250)
+                .IsUnicode(false)
+                .HasColumnName("IMAGE_PATH");
+
+            entity.HasOne(d => d.Car).WithMany(p => p.CarImages)
+                .HasForeignKey(d => d.CarId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_CAR_IMAGES_CAR_DETAILS");
         });
 
         modelBuilder.Entity<City>(entity =>
@@ -75,6 +195,16 @@ public partial class BookingtimeContext : DbContext
             entity.Property(e => e.CountryName).HasMaxLength(100);
         });
 
+        modelBuilder.Entity<FuelType>(entity =>
+        {
+            entity.ToTable("Fuel_Type");
+
+            entity.Property(e => e.FuelType1)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("Fuel_Type");
+        });
+
         modelBuilder.Entity<HotelType>(entity =>
         {
             entity.HasKey(e => e.ListTypeId).HasName("PK__HotelTyp__5268C8CAE61B7CBA");
@@ -87,6 +217,15 @@ public partial class BookingtimeContext : DbContext
             entity.Property(e => e.HotelType1)
                 .HasMaxLength(100)
                 .HasColumnName("Hotel_Type");
+        });
+
+        modelBuilder.Entity<OdometerReading>(entity =>
+        {
+            entity.ToTable("Odometer_Reading");
+
+            entity.Property(e => e.OdometerReading1)
+                .HasMaxLength(50)
+                .HasColumnName("Odometer_Reading");
         });
 
         modelBuilder.Entity<PropertyAmenity>(entity =>
@@ -202,11 +341,65 @@ public partial class BookingtimeContext : DbContext
             entity.Property(e => e.UserId).HasColumnName("USER_ID");
         });
 
+        modelBuilder.Entity<PropertyRoom>(entity =>
+        {
+            entity.ToTable("PROPERTY_ROOMS");
+
+            entity.Property(e => e.Id).HasColumnName("ID");
+            entity.Property(e => e.AdditionalInfoId).HasColumnName("ADDITIONAL_INFO_ID");
+            entity.Property(e => e.Discount)
+                .HasColumnType("decimal(10, 3)")
+                .HasColumnName("DISCOUNT");
+            entity.Property(e => e.Image)
+                .IsUnicode(false)
+                .HasColumnName("IMAGE");
+            entity.Property(e => e.Name)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("NAME");
+            entity.Property(e => e.Price)
+                .HasColumnType("decimal(10, 3)")
+                .HasColumnName("PRICE");
+            entity.Property(e => e.PropertyId).HasColumnName("PROPERTY_ID");
+
+            entity.HasOne(d => d.Property).WithMany(p => p.PropertyRooms)
+                .HasForeignKey(d => d.PropertyId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_PROPERTY_ROOMS_PROPERTY");
+        });
+
         modelBuilder.Entity<Rating>(entity =>
         {
             entity.Property(e => e.Ratings)
                 .HasMaxLength(10)
                 .IsUnicode(false);
+        });
+
+        modelBuilder.Entity<RoomImage>(entity =>
+        {
+            entity.ToTable("ROOM_IMAGES");
+
+            entity.Property(e => e.Id).HasColumnName("ID");
+            entity.Property(e => e.ImagePath)
+                .HasMaxLength(250)
+                .IsUnicode(false)
+                .HasColumnName("IMAGE_PATH");
+            entity.Property(e => e.RoomId).HasColumnName("ROOM_ID");
+
+            entity.HasOne(d => d.Room).WithMany(p => p.RoomImages)
+                .HasForeignKey(d => d.RoomId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_ROOM_IMAGES_ROOM");
+        });
+
+        modelBuilder.Entity<SeatbeltType>(entity =>
+        {
+            entity.ToTable("Seatbelt_Type");
+
+            entity.Property(e => e.SeatbeltType1)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("Seatbelt_Type");
         });
 
         modelBuilder.Entity<State>(entity =>
@@ -250,6 +443,32 @@ public partial class BookingtimeContext : DbContext
                 .HasMaxLength(100)
                 .IsUnicode(false)
                 .HasColumnName("VERIFICATION_TOKEN");
+        });
+
+        modelBuilder.Entity<VehicleCondition>(entity =>
+        {
+            entity.ToTable("Vehicle_Condition");
+
+            entity.Property(e => e.Condition)
+                .HasMaxLength(50)
+                .IsUnicode(false);
+        });
+
+        modelBuilder.Entity<VehicleMake>(entity =>
+        {
+            entity.ToTable("Vehicle_Make");
+
+            entity.Property(e => e.VehicleMake1)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("Vehicle_Make");
+        });
+
+        modelBuilder.Entity<VehicleYear>(entity =>
+        {
+            entity.ToTable("Vehicle_Year");
+
+            entity.Property(e => e.VehicleYear1).HasColumnName("Vehicle_Year");
         });
 
         OnModelCreatingPartial(modelBuilder);
