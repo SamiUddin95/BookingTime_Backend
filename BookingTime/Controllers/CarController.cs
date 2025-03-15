@@ -8,6 +8,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Newtonsoft.Json;
 using System.ComponentModel.DataAnnotations;
+using static BookingTime.DTO.ResponseModel.PropertiesListResponseModel;
+using System.Data;
+using static BookingTime.DTO.ResponseModel.CarDetailsResponseModel;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace BookingTime.Controllers
 {
@@ -205,7 +209,7 @@ namespace BookingTime.Controllers
                 }
                 if (request.image != null)
                 {
-                     imagePath = await SaveImageAsync(request.image);
+                    imagePath = await SaveImageAsync(request.image);
                 }
 
                 var detail = new CarDetail
@@ -217,7 +221,7 @@ namespace BookingTime.Controllers
                     Model = request.model,
                     OdometerId = request.odometerId,
                     VehicleValue = request.vehicleValue,
-                    VehicleConditionId= request.vehicleConditionId,
+                    VehicleConditionId = request.vehicleConditionId,
                     Seatbelts = request.seatbelts,
                     SeatbeltTypeId = request.seatbeltTypeId,
                     MobileNumber1 = request.mobileNumber1,
@@ -262,6 +266,99 @@ namespace BookingTime.Controllers
 
             }
         }
+
+        [HttpPost("/api/GetCarDetailsList")]
+        [EnableCors("AllowAngularApp")]
+        public async Task<CarDetailsResponseModeldetails> GetCarDetailsListAsync([FromBody] CarDetailsRequestModel request)
+        {
+            try
+            {
+                BookingtimeContext _context = new BookingtimeContext(_configuration);
+
+                string? ConnectionString = _configuration.GetConnectionString("BookingTimeConnection");
+                List<CarDetailsResponseModel> carDetailsList = new List<CarDetailsResponseModel>();
+                CarDetailsResponseModeldetails model = new CarDetailsResponseModeldetails();
+                SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder(ConnectionString);
+                builder.ConnectTimeout = 2500;
+                SqlConnection con = new SqlConnection(builder.ConnectionString);
+                System.Data.Common.DbDataReader sqlReader;
+                con.Open();
+
+                using (SqlCommand cmd = con.CreateCommand())
+                {
+                    cmd.CommandText = "Sp_CarDetailsList";
+                    cmd.CommandType = System.Data.CommandType.StoredProcedure;
+                    cmd.CommandTimeout = 0;
+
+                    cmd.Parameters.AddRange(new[]
+                 {
+                 new SqlParameter("@CarId", request.Details.carId),
+                 new SqlParameter("@MakeId", request.Details.makeId),
+                 new SqlParameter("@YearId", request.Details.yearId),
+                 new SqlParameter("@ConditionId", request.Details.conditionId),
+                 new SqlParameter("@FuelTypeId", request.Details.fuelTypeId),
+                 new SqlParameter("@Model", request.Details.model),
+                 new SqlParameter("@MileageLimit", request.Details.mileageLimit),
+                 new SqlParameter("@Location", request.Details.location),
+
+                 new SqlParameter("@Page",request.PaginationInfo.Page),
+                 new SqlParameter("@PageSize", request.PaginationInfo.RowsPerPage)
+                });
+
+                    var adapter = new SqlDataAdapter(cmd);
+                    var ds = new DataSet();
+                    adapter.Fill(ds);
+                    DataTable count = ds.Tables[0];
+                    DataTable list = ds.Tables[1];
+
+                    carDetailsList = list.AsEnumerable()
+                        .Select(row => new CarDetailsResponseModel
+                        {
+                            id = row["ID"] != DBNull.Value ? Convert.ToInt32(row["ID"]) : 0,
+                            location = row["Location"] != DBNull.Value ? row["Location"].ToString() : string.Empty,
+                            vin = row["VIN"] != DBNull.Value ? row["VIN"].ToString() : string.Empty,
+                            vehicleYear = row["VehicleYear"] != DBNull.Value ? row["VehicleYear"].ToString() : string.Empty,
+                            vehicleMake = row["VehicleMake"] != DBNull.Value ? row["VehicleMake"].ToString() : string.Empty,
+                            model = row["Model"] != DBNull.Value ? row["Model"].ToString() : string.Empty,
+                            odometerReading = row["OdometerReading"] != DBNull.Value ? row["OdometerReading"].ToString() : string.Empty,
+                            vehicleValue = row["VehicleValue"] != DBNull.Value ? Convert.ToString(row["VehicleValue"]) : string.Empty,
+                            vehicleCondition = row["VehicleCondition"] != DBNull.Value ? row["VehicleCondition"].ToString() : string.Empty,
+                            seatblets = row["Seatbelts"] != DBNull.Value && Convert.ToBoolean(row["Seatbelts"]),
+                            seatbletType = row["SeatbeltType"] != DBNull.Value ? row["SeatbeltType"].ToString() : string.Empty,
+                            mobileNumber1 = row["MobileNumber1"] != DBNull.Value ? row["MobileNumber1"].ToString() : string.Empty,
+                            mobileNumber2 = row["MobileNumber2"] != DBNull.Value ? row["MobileNumber2"].ToString() : string.Empty,
+                            startDate = row["StartDate"] != DBNull.Value ? Convert.ToDateTime(row["StartDate"]) : DateTime.MinValue,
+                            endDate = row["EndDate"] != DBNull.Value ? Convert.ToDateTime(row["EndDate"]) : DateTime.MinValue,
+                            mileageLimit = row["MileageLimit"] != DBNull.Value ? Convert.ToInt32(row["MileageLimit"]) : 0,
+                            fuelType = row["FuelType"] != DBNull.Value ? row["FuelType"].ToString() : string.Empty,
+                            features = row["Features"] != DBNull.Value ? row["Features"].ToString() : string.Empty,
+                            thumbnail = row["Photos"] != DBNull.Value ? row["Photos"].ToString() : string.Empty,
+                            images = _context.CarImages
+                            .Where(pa => pa.CarId == Convert.ToInt32(row["ID"]))
+                            .Select(x => new image
+                            {
+                                carImages = x.ImagePath 
+                            })
+                            .ToList()
+                        }).ToList();
+                    model.cardetails = carDetailsList;
+                    model.TotalCount = Convert.ToInt32(count.Rows[0]["TotalCount"]);
+
+                    return model;
+                }
+
+            }
+            catch (ValidationException vx)
+            {
+                throw new ValidationException(vx.Message != null ? vx.Message.ToString() : "Validation Error");
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.InnerException != null ? ex.InnerException.ToString() : "Internal Server Error");
+
+            }
+        }
+
 
         private async Task<string> SaveImageAsync(IFormFile? file, string folder = "")
         {
