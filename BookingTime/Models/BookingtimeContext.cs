@@ -11,7 +11,6 @@ public partial class BookingtimeContext : DbContext
     {
         _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
     }
-    // Constructor that takes DbContextOptions
     public BookingtimeContext(DbContextOptions<BookingtimeContext> options)
         : base(options)
     {
@@ -87,14 +86,19 @@ public partial class BookingtimeContext : DbContext
         {
             entity.ToTable("CAR_DETAILS");
 
+            entity.Property(e => e.AdditionalInfo)
+                .HasMaxLength(250)
+                .IsUnicode(false)
+                .HasColumnName("Additional_Info");
+            entity.Property(e => e.CityId).HasColumnName("City_Id");
+            entity.Property(e => e.CountyId).HasColumnName("County_Id");
             entity.Property(e => e.EndDate)
                 .HasColumnType("date")
                 .HasColumnName("End_Date");
             entity.Property(e => e.Features)
-                .HasMaxLength(50)
+                .HasMaxLength(250)
                 .IsUnicode(false);
             entity.Property(e => e.FuelTypeId).HasColumnName("FuelType_Id");
-            entity.Property(e => e.Location).HasMaxLength(255);
             entity.Property(e => e.MakeId).HasColumnName("Make_Id");
             entity.Property(e => e.MileageLimit).HasColumnName("Mileage_Limit");
             entity.Property(e => e.MobileNumber1)
@@ -107,13 +111,18 @@ public partial class BookingtimeContext : DbContext
                 .HasMaxLength(255)
                 .IsUnicode(false);
             entity.Property(e => e.OdometerId).HasColumnName("Odometer_Id");
-            entity.Property(e => e.Photos)
-                .HasMaxLength(255)
-                .IsUnicode(false);
+            entity.Property(e => e.Photos).IsUnicode(false);
             entity.Property(e => e.SeatbeltTypeId).HasColumnName("Seatbelt_type_Id");
             entity.Property(e => e.StartDate)
                 .HasColumnType("date")
                 .HasColumnName("Start_Date");
+            entity.Property(e => e.StateId).HasColumnName("State_Id");
+            entity.Property(e => e.Street)
+                .HasMaxLength(50)
+                .IsUnicode(false);
+            entity.Property(e => e.Transmission)
+                .HasMaxLength(50)
+                .IsUnicode(false);
             entity.Property(e => e.VehicleConditionId).HasColumnName("Vehicle_Condition_Id");
             entity.Property(e => e.VehicleValue)
                 .HasMaxLength(50)
@@ -124,6 +133,7 @@ public partial class BookingtimeContext : DbContext
 
             entity.HasOne(d => d.FuelType).WithMany(p => p.CarDetails)
                 .HasForeignKey(d => d.FuelTypeId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_CAR_DETAILS_Fuel_Type");
 
             entity.HasOne(d => d.Make).WithMany(p => p.CarDetails)
@@ -155,9 +165,7 @@ public partial class BookingtimeContext : DbContext
         {
             entity.ToTable("CAR_IMAGES");
 
-            entity.Property(e => e.Id)
-                .ValueGeneratedNever()
-                .HasColumnName("ID");
+            entity.Property(e => e.Id).HasColumnName("ID");
             entity.Property(e => e.CarId).HasColumnName("CAR_ID");
             entity.Property(e => e.ImagePath)
                 .HasMaxLength(250)

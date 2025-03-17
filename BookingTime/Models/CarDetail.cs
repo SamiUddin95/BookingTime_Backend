@@ -7,7 +7,13 @@ public partial class CarDetail
 {
     public long Id { get; set; }
 
-    public string Location { get; set; } = null!;
+    public int CountyId { get; set; }
+
+    public int CityId { get; set; }
+
+    public int StateId { get; set; }
+
+    public string Street { get; set; } = null!;
 
     public long Vin { get; set; }
 
@@ -27,9 +33,9 @@ public partial class CarDetail
 
     public int? SeatbeltTypeId { get; set; }
 
-    public string? MobileNumber1 { get; set; }
+    public string MobileNumber1 { get; set; } = null!;
 
-    public string MobileNumber2 { get; set; } = null!;
+    public string? MobileNumber2 { get; set; }
 
     public DateTime? StartDate { get; set; }
 
@@ -37,15 +43,19 @@ public partial class CarDetail
 
     public int MileageLimit { get; set; }
 
-    public int? FuelTypeId { get; set; }
+    public int FuelTypeId { get; set; }
 
     public string Features { get; set; } = null!;
 
-    public string? Photos { get; set; }
+    public string Transmission { get; set; } = null!;
+
+    public string AdditionalInfo { get; set; } = null!;
+
+    public string Photos { get; set; } = null!;
 
     public virtual ICollection<CarImage> CarImages { get; } = new List<CarImage>();
 
-    public virtual FuelType? FuelType { get; set; }
+    public virtual FuelType FuelType { get; set; } = null!;
 
     public virtual VehicleMake Make { get; set; } = null!;
 

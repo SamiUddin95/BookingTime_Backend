@@ -495,7 +495,7 @@ namespace BookingTime.Controllers
                 _context.PropertyReviews.Add(propertyReview);
                 _context.SaveChanges();
 
-                return Ok(new { message = $@"Successfully added" });
+                return Ok(new { Message = $@"Successfully added", success = true });
             }
             catch (ValidationException vx)
             {
@@ -511,7 +511,7 @@ namespace BookingTime.Controllers
 
         [HttpPut("/api/UpdatePropertyReview")]
         [EnableCors("AllowAngularApp")]
-        public async Task<string> UpdatePropertyReviewAysnc([FromBody] UpdatePropertyReviewRequestModel req)
+        public async Task<IActionResult> UpdatePropertyReviewAysnc([FromBody] UpdatePropertyReviewRequestModel req)
         {
             try
             {
@@ -528,7 +528,7 @@ namespace BookingTime.Controllers
                 _context.PropertyReviews.Update(propertyReview);
                 _context.SaveChanges();
 
-                return $@"Successfully updated";
+                return Ok(new { Message = $@"Successfully Updated ", success = true });
             }
             catch (ValidationException vx)
             {

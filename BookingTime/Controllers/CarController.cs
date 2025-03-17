@@ -214,7 +214,10 @@ namespace BookingTime.Controllers
 
                 var detail = new CarDetail
                 {
-                    Location = request.location,
+                    CountyId = request.countryId,
+                    CityId = request.cityId,
+                    StateId = request.stateId,
+                    Street = request.street,
                     Vin = request.vin,
                     YearId = request.yearId,
                     MakeId = request.makeId,
@@ -223,13 +226,15 @@ namespace BookingTime.Controllers
                     VehicleValue = request.vehicleValue,
                     VehicleConditionId = request.vehicleConditionId,
                     Seatbelts = request.seatbelts,
-                    SeatbeltTypeId = request.seatbeltTypeId,
+                    SeatbeltTypeId = request.seatbeltTypeId == 0|| request.seatbeltTypeId == null ? null : request.seatbeltTypeId,
                     MobileNumber1 = request.mobileNumber1,
                     MobileNumber2 = request.mobileNumber2,
                     StartDate = request.startDate,
                     EndDate = request.endDate,
                     MileageLimit = request.mileageLimit,
-                    Features = request.features,
+                    Features = string.IsNullOrEmpty(request.features) ? null : request.features,
+                    Transmission = request.transmission,
+                    AdditionalInfo = request.additionalInfo,
                     FuelTypeId = request.fuelTypeId,
                     Photos = imagePath
                 };
@@ -254,7 +259,7 @@ namespace BookingTime.Controllers
                     await _context.SaveChangesAsync();
                 }
 
-                return Ok(new { Message = $@"Successfully Created : CarId : {detail.Id}", sucess = true });
+                return Ok(new { Message = $@"Successfully Created : CarId : {detail.Id}", success = true });
             }
             catch (ValidationException vx)
             {
@@ -337,7 +342,7 @@ namespace BookingTime.Controllers
                             .Where(pa => pa.CarId == Convert.ToInt32(row["ID"]))
                             .Select(x => new image
                             {
-                                carImages = x.ImagePath 
+                                carImages = x.ImagePath
                             })
                             .ToList()
                         }).ToList();
