@@ -11,6 +11,7 @@ public partial class BookingtimeContext : DbContext
     {
         _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
     }
+    // Constructor that takes DbContextOptions
     public BookingtimeContext(DbContextOptions<BookingtimeContext> options)
         : base(options)
     {
