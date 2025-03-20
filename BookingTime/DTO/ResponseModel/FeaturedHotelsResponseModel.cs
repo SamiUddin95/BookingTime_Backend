@@ -27,4 +27,11 @@
         public int amenityId { get; set; }
         public string amenityName { get; set; }
     }
+
+    public class CityGroupedHotelsResponse
+    {
+        public string CityName { get; set; }
+        public List<FeaturedHotelsResponseModel> Properties { get; set; }
+    }
+
 }

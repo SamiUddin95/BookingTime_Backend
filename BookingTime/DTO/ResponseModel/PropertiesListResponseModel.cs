@@ -21,6 +21,7 @@
         public string rating { get; set; }
         public string thumbnail { get; set; }
         public string featuredImages { get; set; }
+        public int totalReviews { get; set; }   
         public List<amenities> amenities { get; set; }
         public List<propertyRooms> rooms { get; set; }
 
