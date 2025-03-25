@@ -222,15 +222,19 @@ namespace BookingTime.Controllers
                     YearId = request.yearId,
                     MakeId = request.makeId,
                     Model = request.model,
+                    PassengerCapacity = request.capacityId,
+                    BasePrice = request.basePrice,
                     OdometerId = request.odometerId,
                     VehicleValue = request.vehicleValue,
                     VehicleConditionId = request.vehicleConditionId,
                     Seatbelts = request.seatbelts,
-                    SeatbeltTypeId = request.seatbeltTypeId == 0|| request.seatbeltTypeId == null ? null : request.seatbeltTypeId,
+                    SeatbeltTypeId = request.seatbeltTypeId == 0 || request.seatbeltTypeId == null ? null : request.seatbeltTypeId,
                     MobileNumber1 = request.mobileNumber1,
                     MobileNumber2 = request.mobileNumber2,
                     StartDate = request.startDate,
                     EndDate = request.endDate,
+                    StartTime = request.startTime,
+                    EndTime = request.endTime,
                     MileageLimit = request.mileageLimit,
                     Features = string.IsNullOrEmpty(request.features) ? null : request.features,
                     Transmission = request.transmission,
@@ -291,7 +295,7 @@ namespace BookingTime.Controllers
 
                 using (SqlCommand cmd = con.CreateCommand())
                 {
-                    cmd.CommandText = "Sp_CarDetailsList";
+                    cmd.CommandText = "Sp_CarDetailsList_Updated";
                     cmd.CommandType = System.Data.CommandType.StoredProcedure;
                     cmd.CommandTimeout = 0;
 
@@ -304,7 +308,13 @@ namespace BookingTime.Controllers
                  new SqlParameter("@FuelTypeId", request.Details.fuelTypeId),
                  new SqlParameter("@Model", request.Details.model),
                  new SqlParameter("@MileageLimit", request.Details.mileageLimit),
-                 new SqlParameter("@Location", request.Details.location),
+
+                 new SqlParameter("@PickUpLocationId", request.Details.pickUpLocationId),
+                 new SqlParameter("@DropOffLocationId", request.Details.dropOffLocationId),
+                 new SqlParameter("@PickupDate", request.Details.pickUpDate),
+                 new SqlParameter("@PickupTime", request.Details.pickUpTime),
+                 new SqlParameter("@ReturnDate", request.Details.returnDate),
+                 new SqlParameter("@ReturnTime", request.Details.returnTime),
 
                  new SqlParameter("@Page",request.PaginationInfo.Page),
                  new SqlParameter("@PageSize", request.PaginationInfo.RowsPerPage)
@@ -364,6 +374,59 @@ namespace BookingTime.Controllers
             }
         }
 
+
+        [HttpPost("/api/AddCarBookingDetail")]
+        [EnableCors("AllowAngularApp")]
+        public async Task<IActionResult> AddCarBookingDetailAysnc([FromBody] AddCarBookingDetailRequestModel request)
+        {
+            try
+            {
+                BookingtimeContext _context = new BookingtimeContext(_configuration);
+                var detail = new CarBookingDetail
+                {
+                    CarId = request.carId,
+                    PickupAddress = request.pickupAddress,
+                    DropoffAddress = request.dropOffAddress,
+                    PickupDate = request.pickUpDate,
+                    PickupTime = request.pickUpTime,
+                    ReturnDate = request.returnDate,
+                    ReturnTime = request.returnTime,
+                    TotalAmount = request.totalAmount,
+                    Distance = request.distance,
+                    Luggages = request.luggages,
+                    Passengers = request.passengers,
+                    BookingDate = DateTime.Now,
+                    CreatedBy = request.userId
+                };
+
+                _context.CarBookingDetails.Add(detail);
+                await _context.SaveChangesAsync();
+
+                if (detail.Id > 0)
+                {
+                    var passengerDetail = new CarBookingPassengerDetail
+                    {
+                        BookingDetailId = detail.Id,
+                        Name = request.name,
+                        Email = request.email,
+                        PhoneNumber = request.phoneNumber,
+                    };
+
+                    _context.CarBookingPassengerDetails.Add(passengerDetail);
+                    await _context.SaveChangesAsync();
+                }
+                return Ok(new { Message = $@"Successfully Created : BookingId : {detail.Id}", success = true });
+            }
+            catch (ValidationException vx)
+            {
+                throw new ValidationException(vx.Message != null ? vx.Message.ToString() : "Validation Error");
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.InnerException != null ? ex.InnerException.ToString() : "Internal Server Error");
+
+            }
+        }
 
         private async Task<string> SaveImageAsync(IFormFile? file, string folder = "")
         {

@@ -21,6 +21,8 @@ public partial class CarDetail
 
     public int MakeId { get; set; }
 
+    public int? PassengerCapacity { get; set; }
+
     public string? Model { get; set; }
 
     public int OdometerId { get; set; }
@@ -40,6 +42,12 @@ public partial class CarDetail
     public DateTime? StartDate { get; set; }
 
     public DateTime? EndDate { get; set; }
+
+    public TimeSpan? StartTime { get; set; }
+
+    public TimeSpan? EndTime { get; set; }
+
+    public decimal? BasePrice { get; set; }
 
     public int MileageLimit { get; set; }
 

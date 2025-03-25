@@ -512,7 +512,7 @@ namespace BookingTime.Controllers
                     using (SqlCommand cmd = new SqlCommand("Sp_GetFeaturedHotels", con))
                     {
                         cmd.CommandType = CommandType.StoredProcedure;
-                        //cmd.Parameters.Add(new SqlParameter("@count", Records));
+                        cmd.Parameters.Add(new SqlParameter("@count", Records));
 
                         con.Open();
                         using (SqlDataReader reader = await cmd.ExecuteReaderAsync())
@@ -558,6 +558,89 @@ namespace BookingTime.Controllers
                 var groupedResult = properties
                           .GroupBy(p => p.CityName)
                           .Select(g => new CityGroupedHotelsResponse
+                          {
+                              CityName = g.Key,
+                              Properties = g.ToList()
+                          })
+                          .ToList();
+
+                return groupedResult;
+            }
+            catch (ValidationException vx)
+            {
+                throw new ValidationException(vx.Message != null ? vx.Message.ToString() : "Validation Error");
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.InnerException != null ? ex.InnerException.ToString() : "Internal Server Error");
+
+            }
+        }
+
+        [HttpGet("/api/GetPopularAttraction")]
+        [EnableCors("AllowAngularApp")]
+        public async Task<List<CityGroupedPopularAttractionResponse>> GetPopularAttractionListAysnc()
+        {
+            try
+            {
+                int Records = Convert.ToInt32(_configuration["GetFeaturedHotelRecords"]);
+                if (Records == 0)
+                    Records = 4;
+
+                List<PopularAttractionResponseModel> properties = new List<PopularAttractionResponseModel>();
+                BookingtimeContext _context = new BookingtimeContext(_configuration);
+                string? ConnectionString = _configuration.GetConnectionString("BookingTimeConnection");
+                using (SqlConnection con = new SqlConnection(ConnectionString))
+                {
+                    using (SqlCommand cmd = new SqlCommand("Sp_GetPopularAttraction", con))
+                    {
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        cmd.Parameters.Add(new SqlParameter("@count", Records));
+
+                        con.Open();
+                        using (SqlDataReader reader = await cmd.ExecuteReaderAsync())
+                        {
+                            while (await reader.ReadAsync())
+                            {
+                                properties.Add(new PopularAttractionResponseModel
+                                {
+                                    ID = Convert.ToInt32(reader["ID"]),
+                                    ListName = reader["LIST_NAME"].ToString(),
+                                    ListTypeDescription = reader["ListType Description"].ToString(),
+                                    UsageType = reader["USAGE_TYPE"].ToString(),
+                                    ShortDesc = reader["SHORT_DESC"].ToString(),
+                                    PolicyDesc = reader["POLICY_DESC"].ToString(),
+                                    TotalFloor = reader["TOTAL_FLOOR"].ToString(),
+                                    TotalRoom = reader["TOTAL_ROOM"].ToString(),
+                                    RoomArea = reader["ROOM_AREA"].ToString(),
+                                    BasePrice = Convert.ToDecimal(reader["BASE_PRICE"]),
+                                    Charges = Convert.ToDecimal(reader["CHARGES"]),
+                                    Discount = Convert.ToDecimal(reader["DISCOUNT"]),
+                                    CurrencyId = Convert.ToInt32(reader["CURRENCY_ID"]),
+                                    CityName = reader["CityName"].ToString(),
+                                    CountryName = reader["CountryName"].ToString(),
+                                    StateName = reader["StateName"].ToString(),
+                                    Reviews = reader["ReviewCount"].ToString(),
+                                    Thumbnail = reader["Thumbnail"].ToString(),
+                                    amenity = _context.PropertyAmenities
+                                .Where(pa => pa.PropertyDetailId == Convert.ToInt32(reader["ID"]))
+                                .Join(_context.Amenities,
+                                      pa => pa.AmenityId,
+                                      a => a.Id,
+                                      (pa, a) => new amenity1
+                                      {
+                                          amenityId = a.Id,
+                                          amenityName = a.Amenities
+                                      })
+                                .ToList()
+                                });
+                            }
+                        }
+                    }
+                }
+                var groupedResult = properties
+                          .GroupBy(p => p.CityName)
+                          .Select(g => new CityGroupedPopularAttractionResponse
                           {
                               CityName = g.Key,
                               Properties = g.ToList()
@@ -658,13 +741,13 @@ namespace BookingTime.Controllers
                 if (propertyDetails == null)
                     throw new Exception("Property not found");
 
-                foreach (var img in req.images)
-                {
-                    string path = await SaveImageAsync(img, propertyDetails.ListName.ToLower().Trim());
-                    imagePaths.Add(path);
-                }
+                //foreach (var img in req.images)
+                //{
+                //    string path = await SaveImageAsync(img, propertyDetails.ListName.ToLower().Trim());
+                //    imagePaths.Add(path);
+                //}
 
-                propertyDetails.Images = string.Join(",", imagePaths);
+//                propertyDetails.Images = string.Join(",", imagePaths);
                 _context.PropertyDetails.Update(propertyDetails);
                 await _context.SaveChangesAsync();
                 return true;
