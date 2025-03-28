@@ -12,6 +12,7 @@ using static BookingTime.DTO.ResponseModel.PropertiesListResponseModel;
 using System.Data;
 using static BookingTime.DTO.ResponseModel.CarDetailsResponseModel;
 using static System.Net.Mime.MediaTypeNames;
+using System.Linq;
 
 namespace BookingTime.Controllers
 {
@@ -309,8 +310,8 @@ namespace BookingTime.Controllers
                  new SqlParameter("@Model", request.Details.model),
                  new SqlParameter("@MileageLimit", request.Details.mileageLimit),
 
-                 new SqlParameter("@PickUpLocationId", request.Details.pickUpLocationId),
-                 new SqlParameter("@DropOffLocationId", request.Details.dropOffLocationId),
+                 //new SqlParameter("@PickUpLocationId", request.Details.pickUpLocationId),
+                 //new SqlParameter("@DropOffLocationId", request.Details.dropOffLocationId),
                  new SqlParameter("@PickupDate", request.Details.pickUpDate),
                  new SqlParameter("@PickupTime", request.Details.pickUpTime),
                  new SqlParameter("@ReturnDate", request.Details.returnDate),
@@ -330,7 +331,9 @@ namespace BookingTime.Controllers
                         .Select(row => new CarDetailsResponseModel
                         {
                             id = row["ID"] != DBNull.Value ? Convert.ToInt32(row["ID"]) : 0,
-                            location = row["Location"] != DBNull.Value ? row["Location"].ToString() : string.Empty,
+                            country = row["CountryName"] != DBNull.Value ? row["CountryName"].ToString() : string.Empty,
+                            city = row["CityName"] != DBNull.Value ? row["CityName"].ToString() : string.Empty,
+                            state = row["StateName"] != DBNull.Value ? row["StateName"].ToString() : string.Empty,
                             vin = row["VIN"] != DBNull.Value ? row["VIN"].ToString() : string.Empty,
                             vehicleYear = row["VehicleYear"] != DBNull.Value ? row["VehicleYear"].ToString() : string.Empty,
                             vehicleMake = row["VehicleMake"] != DBNull.Value ? row["VehicleMake"].ToString() : string.Empty,
@@ -348,6 +351,8 @@ namespace BookingTime.Controllers
                             fuelType = row["FuelType"] != DBNull.Value ? row["FuelType"].ToString() : string.Empty,
                             features = row["Features"] != DBNull.Value ? row["Features"].ToString() : string.Empty,
                             thumbnail = row["Photos"] != DBNull.Value ? row["Photos"].ToString() : string.Empty,
+                            capacity = row["PassengerCapacity"] != DBNull.Value ? row["PassengerCapacity"].ToString() : string.Empty,
+                            basePrice = row["BasePrice"] != DBNull.Value ?Convert.ToDecimal(row["BasePrice"]) : 0,
                             images = _context.CarImages
                             .Where(pa => pa.CarId == Convert.ToInt32(row["ID"]))
                             .Select(x => new image
@@ -450,5 +455,6 @@ namespace BookingTime.Controllers
 
             return relativePath.Replace("\\", "/");
         }
+
     }
 }

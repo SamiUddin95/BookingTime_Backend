@@ -3,10 +3,14 @@
     public class CarDetailsResponseModel
     {
         public int id { get; set; }
-        public string location { get; set; }
+        public string country { get; set; }
+        public string city { get; set; }
+        public string state { get; set; }
         public string vin { get; set; }
         public string vehicleYear { get; set; }
         public string vehicleMake { get; set; }
+        public string capacity { get; set; }
+        public decimal basePrice { get; set; }
         public string model { get; set; }
         public string odometerReading { get; set; }
         public string vehicleValue { get; set; }

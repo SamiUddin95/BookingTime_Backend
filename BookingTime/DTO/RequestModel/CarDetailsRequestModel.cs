@@ -18,8 +18,8 @@
             public DateTime? returnDate { get; set; }
             public TimeSpan? returnTime { get; set; }
             public int? cityId { get; set; }
-            public int? pickUpLocationId { get; set; }
-            public int? dropOffLocationId { get; set; }
+            //public int? pickUpLocationId { get; set; }
+            //public int? dropOffLocationId { get; set; }
             public decimal? priceFrom { get; set; }
             public decimal? priceTo { get; set; }
         }
