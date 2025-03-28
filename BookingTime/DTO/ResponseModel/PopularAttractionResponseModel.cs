@@ -1,6 +1,6 @@
 ﻿namespace BookingTime.DTO.ResponseModel
 {
-    public class FeaturedHotelsResponseModel
+    public class PopularAttractionResponseModel
     {
         public int ID { get; set; }
         public string ListName { get; set; }
@@ -18,20 +18,14 @@
         public string CityName { get; set; }
         public string CountryName { get; set; }
         public string StateName { get; set; }
-        public string Rating { get; set; }
+        public string Reviews { get; set; }
         public string Thumbnail { get; set; }
         public List<amenity1> amenity { get; set; }
     }
-    public class amenity1
-    {
-        public int amenityId { get; set; }
-        public string amenityName { get; set; }
-    }
 
-    public class CityGroupedHotelsResponse
+    public class CityGroupedPopularAttractionResponse
     {
         public string CityName { get; set; }
-        public List<FeaturedHotelsResponseModel> Properties { get; set; }
+        public List<PopularAttractionResponseModel> Properties { get; set; }
     }
-
 }

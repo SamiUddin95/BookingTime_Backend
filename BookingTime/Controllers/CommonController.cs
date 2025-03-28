@@ -212,7 +212,5 @@ namespace BookingTime.Controllers
 
         }
 
-
-
     }
 }

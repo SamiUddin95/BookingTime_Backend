@@ -1,7 +1,8 @@
 ﻿namespace BookingTime.DTO.RequestModel
 {
-    public class AddPropertyDetailsRequestModel
+    public class UpdatePropertyDetailsRequestModel
     {
+        public int PropertyId { get; set; }
         public int? ListTypeId { get; set; }
         public string? ListName { get; set; }
         public string? UsageType { get; set; }
@@ -30,19 +31,18 @@
 
     }
 
-    public class amenity
-    {
-        public int? amenitiesId { get; set; }
+    /*    public class amenity
+        {
+            public int? AmenitiesId { get; set; }
 
-    }
-    public class room
-    {
-        public string name { get; set; }
-        public decimal price { get; set; }
-        public decimal discount { get; set; }
-        public int additionalInfoId { get; set; }
-        public IFormFile Image { get; set; }
+        }
+        public class room
+        {
+            public string name { get; set; }
+            public decimal price { get; set; }
+            public decimal discount { get; set; }
+            public int additionalInfoId { get; set; }
+            public IFormFile Image { get; set; }
 
-    }
-
+        }*/
 }
