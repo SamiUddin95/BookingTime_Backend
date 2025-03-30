@@ -6,6 +6,7 @@ namespace BookingTime.Models;
 
 public partial class BookingtimeContext : DbContext
 {
+
     private readonly IConfiguration _configuration;
     public BookingtimeContext(IConfiguration configuration)
     {
@@ -20,6 +21,8 @@ public partial class BookingtimeContext : DbContext
     public virtual DbSet<AdditionalInfo> AdditionalInfos { get; set; }
 
     public virtual DbSet<AirportTaxi> AirportTaxis { get; set; }
+
+    public virtual DbSet<AirportTaxiBooking> AirportTaxiBookings { get; set; }
 
     public virtual DbSet<Amenity> Amenities { get; set; }
 
@@ -57,6 +60,10 @@ public partial class BookingtimeContext : DbContext
 
     public virtual DbSet<State> States { get; set; }
 
+    public virtual DbSet<TaxiFleetsize> TaxiFleetsizes { get; set; }
+
+    public virtual DbSet<TaxiVechiletype> TaxiVechiletypes { get; set; }
+
     public virtual DbSet<User> Users { get; set; }
 
     public virtual DbSet<VehicleCondition> VehicleConditions { get; set; }
@@ -84,79 +91,114 @@ public partial class BookingtimeContext : DbContext
 
         modelBuilder.Entity<AirportTaxi>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Airport___3213E83F7E5696EE");
+            entity.HasKey(e => e.Id).HasName("PK__AIRPORT___3214EC2705411C8B");
 
-            entity.ToTable("Airport_Taxi");
+            entity.ToTable("AIRPORT_TAXI");
 
-            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.Id).HasColumnName("ID");
             entity.Property(e => e.AvailabilityStatus)
-                .HasMaxLength(20)
-                .HasDefaultValueSql("('available')")
-                .HasColumnName("Availability_Status");
+                .HasMaxLength(50)
+                .HasColumnName("AVAILABILITY_STATUS");
             entity.Property(e => e.BasePrice)
-                .HasColumnType("decimal(10, 2)")
-                .HasColumnName("Base_Price");
-            entity.Property(e => e.BookedAt)
-                .HasDefaultValueSql("(getdate())")
-                .HasColumnName("Booked_At");
-            entity.Property(e => e.BookingPerDay).HasColumnName("Booking_Per_Day");
-            entity.Property(e => e.CityId).HasColumnName("City_id");
-            entity.Property(e => e.ContactNumber).HasColumnName("Contact_Number");
-            entity.Property(e => e.CountryId).HasColumnName("Country_id");
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("BASE_PRICE");
+            entity.Property(e => e.BookingPerDay).HasColumnName("BOOKING_PER_DAY");
+            entity.Property(e => e.Capacity).HasColumnName("CAPACITY");
+            entity.Property(e => e.CityId).HasColumnName("CITY_ID");
+            entity.Property(e => e.ContactNumber)
+                .HasMaxLength(50)
+                .HasColumnName("CONTACT_NUMBER");
+            entity.Property(e => e.CountryId).HasColumnName("COUNTRY_ID");
             entity.Property(e => e.CreatedAt)
-                .HasDefaultValueSql("(getdate())")
-                .HasColumnName("Created_At");
+                .HasColumnType("datetime")
+                .HasColumnName("CREATED_AT");
             entity.Property(e => e.Currency)
-                .HasMaxLength(3)
-                .HasDefaultValueSql("('USD')");
-            entity.Property(e => e.DropoffLocation)
+                .HasMaxLength(10)
+                .HasColumnName("CURRENCY");
+            entity.Property(e => e.Description).HasColumnName("DESCRIPTION");
+            entity.Property(e => e.Email)
                 .HasMaxLength(255)
-                .HasColumnName("Dropoff_Location");
-            entity.Property(e => e.Email).HasMaxLength(100);
+                .HasColumnName("EMAIL");
             entity.Property(e => e.FirstName)
                 .HasMaxLength(100)
-                .HasColumnName("First_Name");
-            entity.Property(e => e.FleetSize)
-                .HasMaxLength(50)
-                .HasColumnName("Fleet_Size");
+                .HasColumnName("FIRST_NAME");
+            entity.Property(e => e.FleetSize).HasColumnName("FLEET_SIZE");
             entity.Property(e => e.ImageUrl)
-                .HasMaxLength(255)
-                .HasColumnName("Image_Url");
+                .HasMaxLength(500)
+                .HasColumnName("IMAGE_URL");
             entity.Property(e => e.LastName)
                 .HasMaxLength(100)
-                .HasColumnName("Last_Name");
+                .HasColumnName("LAST_NAME");
             entity.Property(e => e.OperatingAirport)
                 .HasMaxLength(255)
-                .HasColumnName("Operating_Airport");
-            entity.Property(e => e.PaymentStatus)
-                .HasMaxLength(20)
-                .HasDefaultValueSql("('Unpaid')")
-                .HasColumnName("Payment_Status");
-            entity.Property(e => e.PickupLocation)
-                .HasMaxLength(255)
-                .HasColumnName("Pickup_Location");
-            entity.Property(e => e.PickupTime).HasColumnName("Pickup_Time");
+                .HasColumnName("OPERATING_AIRPORT");
+            entity.Property(e => e.StateId).HasColumnName("STATE_ID");
             entity.Property(e => e.Status)
-                .HasMaxLength(20)
-                .HasDefaultValueSql("('Pending')");
-            entity.Property(e => e.TotalPrice)
-                .HasColumnType("decimal(10, 2)")
-                .HasColumnName("Total_Price");
-            entity.Property(e => e.UpdatedAt)
-                .HasDefaultValueSql("(getdate())")
-                .HasColumnName("Updated_At");
-            entity.Property(e => e.VehicleType)
                 .HasMaxLength(50)
-                .HasColumnName("Vehicle_Type");
-            entity.Property(e => e.Website).HasMaxLength(50);
+                .HasColumnName("STATUS");
+            entity.Property(e => e.UpdatedAt)
+                .HasColumnType("datetime")
+                .HasColumnName("UPDATED_AT");
+            entity.Property(e => e.VehicleType)
+                .HasMaxLength(100)
+                .HasColumnName("VEHICLE_TYPE");
+            entity.Property(e => e.Website)
+                .HasMaxLength(255)
+                .HasColumnName("WEBSITE");
+        });
 
-            entity.HasOne(d => d.City).WithMany(p => p.AirportTaxis)
-                .HasForeignKey(d => d.CityId)
-                .HasConstraintName("FK_Airport_Taxi_Cities");
+        modelBuilder.Entity<AirportTaxiBooking>(entity =>
+        {
+            entity.ToTable("AIRPORT_TAXI_BOOKING");
 
-            entity.HasOne(d => d.Country).WithMany(p => p.AirportTaxis)
-                .HasForeignKey(d => d.CountryId)
-                .HasConstraintName("FK_Airport_Taxi_Countries");
+            entity.Property(e => e.Id).HasColumnName("ID");
+            entity.Property(e => e.BookingDate)
+                .HasColumnType("datetime")
+                .HasColumnName("BOOKING_DATE");
+            entity.Property(e => e.Contact)
+                .HasMaxLength(15)
+                .IsUnicode(false)
+                .HasColumnName("CONTACT");
+            entity.Property(e => e.CreatedAt)
+                .HasColumnType("datetime")
+                .HasColumnName("CREATED_AT");
+            entity.Property(e => e.CreatedBy).HasColumnName("CREATED_BY");
+            entity.Property(e => e.Description)
+                .HasMaxLength(250)
+                .IsUnicode(false)
+                .HasColumnName("DESCRIPTION");
+            entity.Property(e => e.DropoffLocation)
+                .HasMaxLength(250)
+                .IsUnicode(false)
+                .HasColumnName("DROPOFF_LOCATION");
+            entity.Property(e => e.Email)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("EMAIL");
+            entity.Property(e => e.FirstName)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("FIRST_NAME");
+            entity.Property(e => e.LastName)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("LAST_NAME");
+            entity.Property(e => e.PaymentStatus)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("PAYMENT_STATUS");
+            entity.Property(e => e.PickupDate)
+                .HasColumnType("datetime")
+                .HasColumnName("PICKUP_Date");
+            entity.Property(e => e.PickupLocation)
+                .HasMaxLength(250)
+                .IsUnicode(false)
+                .HasColumnName("PICKUP_LOCATION");
+            entity.Property(e => e.PickupTime).HasColumnName("PICKUP_TIME");
+            entity.Property(e => e.Price)
+                .HasColumnType("decimal(10, 2)")
+                .HasColumnName("PRICE");
+            entity.Property(e => e.TaxiId).HasColumnName("TAXI_ID");
         });
 
         modelBuilder.Entity<Amenity>(entity =>
@@ -567,6 +609,32 @@ public partial class BookingtimeContext : DbContext
             entity.HasOne(d => d.Country).WithMany(p => p.States)
                 .HasForeignKey(d => d.CountryId)
                 .HasConstraintName("FK__State__CountryId__6A30C649");
+        });
+
+        modelBuilder.Entity<TaxiFleetsize>(entity =>
+        {
+            entity.ToTable("TAXI_FLEETSIZES");
+
+            entity.Property(e => e.Id).HasColumnName("ID");
+            entity.Property(e => e.Name)
+                .HasMaxLength(100)
+                .IsUnicode(false)
+                .HasColumnName("NAME");
+        });
+
+        modelBuilder.Entity<TaxiVechiletype>(entity =>
+        {
+            entity.ToTable("TAXI_VECHILETYPES");
+
+            entity.Property(e => e.Id).HasColumnName("ID");
+            entity.Property(e => e.Description)
+                .HasMaxLength(150)
+                .IsUnicode(false)
+                .HasColumnName("DESCRIPTION");
+            entity.Property(e => e.Name)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("NAME");
         });
 
         modelBuilder.Entity<User>(entity =>

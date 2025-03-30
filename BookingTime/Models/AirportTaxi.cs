@@ -7,15 +7,17 @@ public partial class AirportTaxi
 {
     public int Id { get; set; }
 
-    public string? OperatingAirport { get; set; }
+    public string OperatingAirport { get; set; } = null!;
 
-    public int? CountryId { get; set; }
+    public int CountryId { get; set; }
 
-    public long? CityId { get; set; }
+    public int CityId { get; set; }
 
-    public int? BookingPerDay { get; set; }
+    public int StateId { get; set; }
 
-    public string? FleetSize { get; set; }
+    public int BookingPerDay { get; set; }
+
+    public int FleetSize { get; set; }
 
     public string? Website { get; set; }
 
@@ -25,41 +27,25 @@ public partial class AirportTaxi
 
     public decimal BasePrice { get; set; }
 
-    public string? Currency { get; set; }
+    public string Currency { get; set; } = null!;
 
-    public string? AvailabilityStatus { get; set; }
-
-    public string? PickupLocation { get; set; }
-
-    public string? DropoffLocation { get; set; }
+    public string AvailabilityStatus { get; set; } = null!;
 
     public string? Description { get; set; }
 
     public string? ImageUrl { get; set; }
 
-    public string? FirstName { get; set; }
+    public string FirstName { get; set; } = null!;
 
-    public string? LastName { get; set; }
+    public string LastName { get; set; } = null!;
 
-    public string? Email { get; set; }
+    public string Email { get; set; } = null!;
 
-    public long? ContactNumber { get; set; }
+    public string ContactNumber { get; set; } = null!;
 
-    public DateTime? PickupTime { get; set; }
-
-    public string? Status { get; set; }
-
-    public decimal? TotalPrice { get; set; }
-
-    public string? PaymentStatus { get; set; }
-
-    public DateTime? BookedAt { get; set; }
+    public string Status { get; set; } = null!;
 
     public DateTime? CreatedAt { get; set; }
 
     public DateTime? UpdatedAt { get; set; }
-
-    public virtual City? City { get; set; }
-
-    public virtual Country? Country { get; set; }
 }

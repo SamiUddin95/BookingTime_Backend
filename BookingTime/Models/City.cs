@@ -11,8 +11,6 @@ public partial class City
 
     public int CountryId { get; set; }
 
-    public virtual ICollection<AirportTaxi> AirportTaxis { get; } = new List<AirportTaxi>();
-
     public virtual Country Country { get; set; } = null!;
 
     public virtual ICollection<PropertyDetail> PropertyDetails { get; } = new List<PropertyDetail>();

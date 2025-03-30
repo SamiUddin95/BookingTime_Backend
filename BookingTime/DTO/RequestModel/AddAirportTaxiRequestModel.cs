@@ -2,29 +2,24 @@
 {
     public class AddAirportTaxiRequestModel
     {
-        public string OperatingAirport { get; set; }
-        public int CountryId { get; set; }
-        public long CityId { get; set; }
-        public int BookingPerDay { get; set; }
-        public string FleetSize { get; set; }
-        public string Website { get; set; }
-        public string VehicleType { get; set; } 
-        public int Capacity { get; set; }
-        public decimal BasePrice { get; set; }
-        public string Currency { get; set; }
-        public string AvailabilityStatus { get; set; }
-        public string PickupLocation { get; set; }
-        public string DropoffLocation { get; set; }
-        public string Description { get; set; }
-        public IFormFile Image { get; set; }
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
-        public string Email { get; set; }
-        public long ContactNumber { get; set; }
-        public DateTime PickupTime { get; set; }
-        public string Status { get; set; }
-        public decimal TotalPrice { get; set; }
-        public string PaymentStatus { get; set; }
-        public DateTime BookedAt { get; set; }
+        public int countryId { get; set; }
+        public int cityId { get; set; }
+        public int stateId { get; set; }
+        public string operatingAirport { get; set; }
+        public int bookingPerDay { get; set; }
+        public int fleetSize { get; set; }
+        public string website { get; set; }
+        public string vehicleType { get; set; } 
+        public int capacity { get; set; }
+        public decimal basePrice { get; set; }
+        public string currency { get; set; }
+        public string availabilityStatus { get; set; }
+        public string description { get; set; }
+        public IFormFile image { get; set; }
+        public string firstName { get; set; }
+        public string lastName { get; set; }
+        public string email { get; set; }
+        public string contactNumber { get; set; }
+        public string status { get; set; }
     }
 }
