@@ -381,3 +381,6 @@ D:\Booking\BookingTimeBack\BookingTime\obj\Release\net7.0\win-x64\refint\Booking
 D:\Booking\BookingTimeBack\BookingTime\obj\Release\net7.0\win-x64\BookingTime.pdb
 D:\Booking\BookingTimeBack\BookingTime\obj\Release\net7.0\win-x64\BookingTime.genruntimeconfig.cache
 D:\Booking\BookingTimeBack\BookingTime\obj\Release\net7.0\win-x64\ref\BookingTime.dll
+D:\Booking\BookingTimeBack\BookingTime\bin\Release\net7.0\win-x64\BouncyCastle.Cryptography.dll
+D:\Booking\BookingTimeBack\BookingTime\bin\Release\net7.0\win-x64\MailKit.dll
+D:\Booking\BookingTimeBack\BookingTime\bin\Release\net7.0\win-x64\MimeKit.dll

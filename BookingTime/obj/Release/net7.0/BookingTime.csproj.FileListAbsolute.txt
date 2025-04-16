@@ -74,3 +74,11 @@ D:\Booking\BookingTimeBack\BookingTime\obj\Release\net7.0\refint\BookingTime.dll
 D:\Booking\BookingTimeBack\BookingTime\obj\Release\net7.0\BookingTime.pdb
 D:\Booking\BookingTimeBack\BookingTime\obj\Release\net7.0\BookingTime.genruntimeconfig.cache
 D:\Booking\BookingTimeBack\BookingTime\obj\Release\net7.0\ref\BookingTime.dll
+D:\Booking\BookingTimeBack\BookingTime\bin\Release\net7.0\BouncyCastle.Cryptography.dll
+D:\Booking\BookingTimeBack\BookingTime\bin\Release\net7.0\MailKit.dll
+D:\Booking\BookingTimeBack\BookingTime\bin\Release\net7.0\MimeKit.dll
+D:\Booking\BookingTimeBack\BookingTime\bin\Release\net7.0\System.Formats.Asn1.dll
+D:\Booking\BookingTimeBack\BookingTime\bin\Release\net7.0\System.Security.Cryptography.Pkcs.dll
+D:\Booking\BookingTimeBack\BookingTime\bin\Release\net7.0\System.Text.Encoding.CodePages.dll
+D:\Booking\BookingTimeBack\BookingTime\bin\Release\net7.0\runtimes\win\lib\net7.0\System.Security.Cryptography.Pkcs.dll
+D:\Booking\BookingTimeBack\BookingTime\bin\Release\net7.0\runtimes\win\lib\net7.0\System.Text.Encoding.CodePages.dll

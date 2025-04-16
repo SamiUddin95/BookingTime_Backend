@@ -582,8 +582,6 @@ namespace BookingTime.Controllers
         {
             try
             {
-
-
                 List<PropertyReviewsResponseModel> reviews = new List<PropertyReviewsResponseModel>();
                 PropertyReviewsResponseModeldetails model = new PropertyReviewsResponseModeldetails();
                 BookingtimeContext _context = new BookingtimeContext(_configuration);
@@ -600,7 +598,7 @@ namespace BookingTime.Controllers
                     cmd.CommandTimeout = 0;
 
                     cmd.Parameters.AddRange(new[]
-                 {
+                    {
                  new SqlParameter("@propertyId", req.propertyId),
                  new SqlParameter("@Page",req.PaginationInfo.Page),
                  new SqlParameter("@PageSize", req.PaginationInfo.RowsPerPage)

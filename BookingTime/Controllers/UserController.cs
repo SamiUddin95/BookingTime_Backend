@@ -12,9 +12,12 @@ using MailKit.Net.Smtp;
 using MailKit.Security;
 using MimeKit;
 using BookingTime.DTO.RequestModel;
+using Microsoft.EntityFrameworkCore;
+using BookingTime.DTO.ResponseModel;
 
 namespace BookingTime.Controllers
 {
+
     public class UserController : Controller
     {
         private readonly IConfiguration _configuration;
@@ -221,6 +224,35 @@ namespace BookingTime.Controllers
 
             // Return the JWT token as a string
             return tokenHandler.WriteToken(token);
+        }
+
+        [HttpGet("/api/GetAllUserList")]
+        [EnableCors("AllowAngularApp")]
+        public async Task<IActionResult> GetAllUserList()
+        {
+            try
+            {
+                var connectionString = _configuration.GetConnectionString("BookingTimeConnection");
+
+                using (BookingtimeContext _context = new BookingtimeContext(_configuration))
+                {
+
+                    var user = await _context.Users.Select(x => new
+                    {
+                        Id = x.Id,
+                        Name = x.FullName,
+                        Email = x.Email,
+                        Verified = x.IsVerified,
+
+                    }).ToListAsync();
+                    return Ok(user);
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Internal Server Error", error = ex.Message });
+            }
+
         }
     }
 }

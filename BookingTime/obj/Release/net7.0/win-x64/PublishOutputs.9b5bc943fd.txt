@@ -41,7 +41,6 @@ D:\Booking\BookingTimeBack\BookingTime\obj\Release\net7.0\win-x64\PubTmp\Out\Sys
 D:\Booking\BookingTimeBack\BookingTime\obj\Release\net7.0\win-x64\PubTmp\Out\System.Drawing.Primitives.dll
 D:\Booking\BookingTimeBack\BookingTime\obj\Release\net7.0\win-x64\PubTmp\Out\System.Drawing.dll
 D:\Booking\BookingTimeBack\BookingTime\obj\Release\net7.0\win-x64\PubTmp\Out\System.Dynamic.Runtime.dll
-D:\Booking\BookingTimeBack\BookingTime\obj\Release\net7.0\win-x64\PubTmp\Out\System.Formats.Asn1.dll
 D:\Booking\BookingTimeBack\BookingTime\obj\Release\net7.0\win-x64\PubTmp\Out\System.Formats.Tar.dll
 D:\Booking\BookingTimeBack\BookingTime\obj\Release\net7.0\win-x64\PubTmp\Out\System.Globalization.Calendars.dll
 D:\Booking\BookingTimeBack\BookingTime\obj\Release\net7.0\win-x64\PubTmp\Out\System.Globalization.Extensions.dll
@@ -137,7 +136,6 @@ D:\Booking\BookingTimeBack\BookingTime\obj\Release\net7.0\win-x64\PubTmp\Out\Sys
 D:\Booking\BookingTimeBack\BookingTime\obj\Release\net7.0\win-x64\PubTmp\Out\System.Security.dll
 D:\Booking\BookingTimeBack\BookingTime\obj\Release\net7.0\win-x64\PubTmp\Out\System.ServiceModel.Web.dll
 D:\Booking\BookingTimeBack\BookingTime\obj\Release\net7.0\win-x64\PubTmp\Out\System.ServiceProcess.dll
-D:\Booking\BookingTimeBack\BookingTime\obj\Release\net7.0\win-x64\PubTmp\Out\System.Text.Encoding.CodePages.dll
 D:\Booking\BookingTimeBack\BookingTime\obj\Release\net7.0\win-x64\PubTmp\Out\System.Text.Encoding.Extensions.dll
 D:\Booking\BookingTimeBack\BookingTime\obj\Release\net7.0\win-x64\PubTmp\Out\System.Text.Encoding.dll
 D:\Booking\BookingTimeBack\BookingTime\obj\Release\net7.0\win-x64\PubTmp\Out\System.Text.Encodings.Web.dll
@@ -304,7 +302,6 @@ D:\Booking\BookingTimeBack\BookingTime\obj\Release\net7.0\win-x64\PubTmp\Out\Mic
 D:\Booking\BookingTimeBack\BookingTime\obj\Release\net7.0\win-x64\PubTmp\Out\System.Diagnostics.EventLog.Messages.dll
 D:\Booking\BookingTimeBack\BookingTime\obj\Release\net7.0\win-x64\PubTmp\Out\System.Diagnostics.EventLog.dll
 D:\Booking\BookingTimeBack\BookingTime\obj\Release\net7.0\win-x64\PubTmp\Out\System.IO.Pipelines.dll
-D:\Booking\BookingTimeBack\BookingTime\obj\Release\net7.0\win-x64\PubTmp\Out\System.Security.Cryptography.Pkcs.dll
 D:\Booking\BookingTimeBack\BookingTime\obj\Release\net7.0\win-x64\PubTmp\Out\System.Security.Cryptography.Xml.dll
 D:\Booking\BookingTimeBack\BookingTime\obj\Release\net7.0\win-x64\PubTmp\Out\System.Threading.RateLimiting.dll
 D:\Booking\BookingTimeBack\BookingTime\obj\Release\net7.0\win-x64\PubTmp\Out\Microsoft.DiaSymReader.Native.amd64.dll
@@ -324,6 +321,8 @@ D:\Booking\BookingTimeBack\BookingTime\obj\Release\net7.0\win-x64\PubTmp\Out\msq
 D:\Booking\BookingTimeBack\BookingTime\obj\Release\net7.0\win-x64\PubTmp\Out\aspnetcorev2_inprocess.dll
 D:\Booking\BookingTimeBack\BookingTime\obj\Release\net7.0\win-x64\PubTmp\Out\Azure.Core.dll
 D:\Booking\BookingTimeBack\BookingTime\obj\Release\net7.0\win-x64\PubTmp\Out\Azure.Identity.dll
+D:\Booking\BookingTimeBack\BookingTime\obj\Release\net7.0\win-x64\PubTmp\Out\BouncyCastle.Cryptography.dll
+D:\Booking\BookingTimeBack\BookingTime\obj\Release\net7.0\win-x64\PubTmp\Out\MailKit.dll
 D:\Booking\BookingTimeBack\BookingTime\obj\Release\net7.0\win-x64\PubTmp\Out\Microsoft.Bcl.AsyncInterfaces.dll
 D:\Booking\BookingTimeBack\BookingTime\obj\Release\net7.0\win-x64\PubTmp\Out\Microsoft.Data.SqlClient.dll
 D:\Booking\BookingTimeBack\BookingTime\obj\Release\net7.0\win-x64\PubTmp\Out\Microsoft.EntityFrameworkCore.dll
@@ -341,17 +340,21 @@ D:\Booking\BookingTimeBack\BookingTime\obj\Release\net7.0\win-x64\PubTmp\Out\Mic
 D:\Booking\BookingTimeBack\BookingTime\obj\Release\net7.0\win-x64\PubTmp\Out\Microsoft.OpenApi.dll
 D:\Booking\BookingTimeBack\BookingTime\obj\Release\net7.0\win-x64\PubTmp\Out\Microsoft.SqlServer.Server.dll
 D:\Booking\BookingTimeBack\BookingTime\obj\Release\net7.0\win-x64\PubTmp\Out\Microsoft.Win32.SystemEvents.dll
+D:\Booking\BookingTimeBack\BookingTime\obj\Release\net7.0\win-x64\PubTmp\Out\MimeKit.dll
 D:\Booking\BookingTimeBack\BookingTime\obj\Release\net7.0\win-x64\PubTmp\Out\Newtonsoft.Json.dll
 D:\Booking\BookingTimeBack\BookingTime\obj\Release\net7.0\win-x64\PubTmp\Out\Swashbuckle.AspNetCore.Swagger.dll
 D:\Booking\BookingTimeBack\BookingTime\obj\Release\net7.0\win-x64\PubTmp\Out\Swashbuckle.AspNetCore.SwaggerGen.dll
 D:\Booking\BookingTimeBack\BookingTime\obj\Release\net7.0\win-x64\PubTmp\Out\Swashbuckle.AspNetCore.SwaggerUI.dll
 D:\Booking\BookingTimeBack\BookingTime\obj\Release\net7.0\win-x64\PubTmp\Out\System.Configuration.ConfigurationManager.dll
 D:\Booking\BookingTimeBack\BookingTime\obj\Release\net7.0\win-x64\PubTmp\Out\System.Drawing.Common.dll
+D:\Booking\BookingTimeBack\BookingTime\obj\Release\net7.0\win-x64\PubTmp\Out\System.Formats.Asn1.dll
 D:\Booking\BookingTimeBack\BookingTime\obj\Release\net7.0\win-x64\PubTmp\Out\System.IdentityModel.Tokens.Jwt.dll
 D:\Booking\BookingTimeBack\BookingTime\obj\Release\net7.0\win-x64\PubTmp\Out\System.Memory.Data.dll
 D:\Booking\BookingTimeBack\BookingTime\obj\Release\net7.0\win-x64\PubTmp\Out\System.Runtime.Caching.dll
+D:\Booking\BookingTimeBack\BookingTime\obj\Release\net7.0\win-x64\PubTmp\Out\System.Security.Cryptography.Pkcs.dll
 D:\Booking\BookingTimeBack\BookingTime\obj\Release\net7.0\win-x64\PubTmp\Out\System.Security.Cryptography.ProtectedData.dll
 D:\Booking\BookingTimeBack\BookingTime\obj\Release\net7.0\win-x64\PubTmp\Out\System.Security.Permissions.dll
+D:\Booking\BookingTimeBack\BookingTime\obj\Release\net7.0\win-x64\PubTmp\Out\System.Text.Encoding.CodePages.dll
 D:\Booking\BookingTimeBack\BookingTime\obj\Release\net7.0\win-x64\PubTmp\Out\System.Windows.Extensions.dll
 D:\Booking\BookingTimeBack\BookingTime\obj\Release\net7.0\win-x64\PubTmp\Out\Microsoft.Data.SqlClient.SNI.dll
 D:\Booking\BookingTimeBack\BookingTime\obj\Release\net7.0\win-x64\PubTmp\Out\BookingTime.deps.json
