@@ -6,6 +6,9 @@ namespace BookingTime.Models;
 
 public partial class BookingtimeContext : DbContext
 {
+    public BookingtimeContext()
+    {
+    }
 
     private readonly IConfiguration _configuration;
     public BookingtimeContext(IConfiguration configuration)
@@ -37,6 +40,8 @@ public partial class BookingtimeContext : DbContext
     public virtual DbSet<City> Cities { get; set; }
 
     public virtual DbSet<Country> Countries { get; set; }
+
+    public virtual DbSet<Currency> Currencies { get; set; }
 
     public virtual DbSet<FuelType> FuelTypes { get; set; }
 
@@ -392,6 +397,22 @@ public partial class BookingtimeContext : DbContext
 
             entity.Property(e => e.CountryCode).HasMaxLength(10);
             entity.Property(e => e.CountryName).HasMaxLength(100);
+        });
+
+        modelBuilder.Entity<Currency>(entity =>
+        {
+            entity.ToTable("CURRENCY");
+
+            entity.Property(e => e.Id).HasColumnName("ID");
+            entity.Property(e => e.CountryId).HasColumnName("COUNTRY_ID");
+            entity.Property(e => e.Name)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("NAME");
+            entity.Property(e => e.Symbol)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("SYMBOL");
         });
 
         modelBuilder.Entity<FuelType>(entity =>
