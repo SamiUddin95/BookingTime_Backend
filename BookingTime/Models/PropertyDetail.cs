@@ -29,8 +29,6 @@ public partial class PropertyDetail
 
     public string? Longitude { get; set; }
 
-    public string? Amenities { get; set; }
-
     public string? LongDesc { get; set; }
 
     public string? TotalFloor { get; set; }
@@ -52,8 +50,6 @@ public partial class PropertyDetail
     public decimal? Charges { get; set; }
 
     public string? Thumbnail { get; set; }
-
-    public string? Images { get; set; }
 
     public int? AmenitiesId { get; set; }
 

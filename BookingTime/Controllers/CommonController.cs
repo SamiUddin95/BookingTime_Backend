@@ -109,6 +109,86 @@ namespace BookingTime.Controllers
             }
 
         }
+        
+        [HttpGet("/api/GetCityByStateId/{stateId}")]
+        public async Task<IActionResult> GetCityByStateIdListAsync(int stateId)
+        {
+            try
+            {
+                var connectionString = _configuration.GetConnectionString("BookingTimeConnection");
+
+                using (BookingtimeContext _context = new BookingtimeContext(_configuration))
+                {
+                    if (stateId == 0)
+                    {
+                        var Cities = await _context.Cities.Select(x => new
+                        {
+                            x.CountryId,
+                            x.CityId,
+                            x.CityName,
+                            x.StateId
+                        }).ToListAsync();
+                        return Ok(Cities);
+                    }
+                    else
+                    {
+                        var Cities = await _context.Cities.Where(x => x.StateId == stateId).Select(x => new
+                        {
+                            x.CountryId,
+                            x.CityId,
+                            x.CityName,
+                            x.StateId
+                        }).ToListAsync();
+                        return Ok(Cities);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Internal Server Error", error = ex.Message });
+            }
+
+        }
+        
+        [HttpGet("/api/GetCurrencyBycountryId/{countryId}")]
+        public async Task<IActionResult> GetCurrencyBycountryIdListAsync(int countryId)
+        {
+            try
+            {
+                var connectionString = _configuration.GetConnectionString("BookingTimeConnection");
+
+                using (BookingtimeContext _context = new BookingtimeContext(_configuration))
+                {
+                    if (countryId == 0)
+                    {
+                        var Currency = await _context.Currencies.Select(x => new
+                        {
+                            x.Id,
+                            x.Name,
+                            x.Symbol,
+                            x.CountryId
+                        }).ToListAsync();
+                        return Ok(Currency);
+                    }
+                    else
+                    {
+                        var Currency = await _context.Currencies.Where(x => x.CountryId == countryId).Select(x => new
+                        {
+                            x.Id,
+                            x.Name,
+                            x.Symbol,
+                            x.CountryId
+                        }).ToListAsync();
+                        return Ok(Currency);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Internal Server Error", error = ex.Message });
+            }
+
+        }
 
         [HttpGet("/api/GetAllAmenitiesList")]
         public async Task<IActionResult> GetAllAmenitiesListAsync()
@@ -211,8 +291,6 @@ namespace BookingTime.Controllers
             }
 
         }
-
-
 
     }
 }

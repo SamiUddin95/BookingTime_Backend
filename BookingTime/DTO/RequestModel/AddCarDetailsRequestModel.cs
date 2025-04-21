@@ -11,6 +11,7 @@ namespace BookingTime.DTO.RequestModel
         public long vin { get; set; }
         public int yearId { get; set; }
         public int makeId { get; set; }
+        public int capacityId { get; set; }
         public string? model { get; set; }
         public int odometerId { get; set; }
         public string? vehicleValue { get; set; }
@@ -21,6 +22,9 @@ namespace BookingTime.DTO.RequestModel
         public string? mobileNumber2 { get; set; }
         public DateTime? startDate { get; set; }
         public DateTime? endDate { get; set; }
+        public TimeSpan? startTime { get; set; }
+        public TimeSpan? endTime { get; set; }
+        public decimal basePrice { get; set; }
         public int mileageLimit { get; set; }
         public int fuelTypeId { get; set; }
         public string? features { get; set; }
