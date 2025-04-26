@@ -28,12 +28,10 @@ namespace BookingTime.Controllers
        
         [HttpPost]
         [Route("/api/login")]
-        [EnableCors("AllowAngularApp")]
         public object Login([FromBody] LoginRequest form)
         {
             try
-            {
-                var connectionString = _configuration.GetConnectionString("BookingTimeConnection");
+            { 
                 BookingtimeContext bTMContext = new BookingtimeContext(_configuration);
 
                 if (string.IsNullOrEmpty(form.Email) || string.IsNullOrEmpty(form.Password))
