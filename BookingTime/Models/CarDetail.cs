@@ -55,7 +55,7 @@ public partial class CarDetail
 
     public string Transmission { get; set; } = null!;
 
-    public string AdditionalInfo { get; set; } = null!;
+    public string? AdditionalInfo { get; set; }
 
     public string Features { get; set; } = null!;
 

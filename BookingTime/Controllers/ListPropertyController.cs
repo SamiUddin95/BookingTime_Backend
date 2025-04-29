@@ -131,22 +131,24 @@ namespace BookingTime.Controllers
                 if (request.rooms != null && request.rooms.Count > 0)
                 {
                     var rooms = new List<PropertyRoom>();
-
-                    foreach (var room in request.rooms)
+                    if (rooms.Count > 0)
                     {
-                        rooms.Add(new PropertyRoom
+                        foreach (var room in request.rooms)
                         {
-                            PropertyId = property.Id,
-                            Name = room.name,
-                            Price = room.price,
-                            Discount = room.discount,
-                            AdditionalInfoId = room.additionalInfoId,
-                            Image = await SaveImageAsync(room.Image, $@"{property.ListName}\Rooms")
-                        });
-                    }
+                            rooms.Add(new PropertyRoom
+                            {
+                                PropertyId = property.Id,
+                                Name = room.name,
+                                Price = room.price,
+                                Discount = room.discount,
+                                AdditionalInfoId = room.additionalInfoId,
+                                Image = await SaveImageAsync(room.Image, $@"{property.ListName}\Rooms")
+                            });
+                        }
 
-                    _context.PropertyRooms.AddRange(rooms);
-                    await _context.SaveChangesAsync();
+                        _context.PropertyRooms.AddRange(rooms);
+                        await _context.SaveChangesAsync();
+                    }
                 }
 
 

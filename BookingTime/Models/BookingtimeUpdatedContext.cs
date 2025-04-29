@@ -10,6 +10,11 @@ public partial class BookingtimeContext : DbContext
     {
     }
 
+    private readonly IConfiguration _configuration;
+    public BookingtimeContext(IConfiguration configuration)
+    {
+        _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+    }
     public BookingtimeContext(DbContextOptions<BookingtimeContext> options)
         : base(options)
     {
@@ -22,6 +27,10 @@ public partial class BookingtimeContext : DbContext
     public virtual DbSet<AirportTaxiBooking> AirportTaxiBookings { get; set; }
 
     public virtual DbSet<Amenity> Amenities { get; set; }
+
+    public virtual DbSet<CarBookingDetail> CarBookingDetails { get; set; }
+
+    public virtual DbSet<CarBookingPassengerDetail> CarBookingPassengerDetails { get; set; }
 
     public virtual DbSet<CarDetail> CarDetails { get; set; }
 
@@ -201,6 +210,65 @@ public partial class BookingtimeContext : DbContext
             entity.Property(e => e.Amenities)
                 .HasMaxLength(50)
                 .IsUnicode(false);
+        });
+
+        modelBuilder.Entity<CarBookingDetail>(entity =>
+        {
+            entity.ToTable("CAR_BOOKING_DETAILS");
+
+            entity.Property(e => e.Id).HasColumnName("ID");
+            entity.Property(e => e.BookingDate)
+                .HasColumnType("datetime")
+                .HasColumnName("BOOKING_DATE");
+            entity.Property(e => e.CarId).HasColumnName("CAR_ID");
+            entity.Property(e => e.CreatedBy).HasColumnName("CREATED_BY");
+            entity.Property(e => e.Distance)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("DISTANCE");
+            entity.Property(e => e.DropoffAddress)
+                .HasMaxLength(100)
+                .IsUnicode(false)
+                .HasColumnName("DROPOFF_ADDRESS");
+            entity.Property(e => e.Luggages).HasColumnName("LUGGAGES");
+            entity.Property(e => e.Passengers).HasColumnName("PASSENGERS");
+            entity.Property(e => e.PickupAddress)
+                .HasMaxLength(100)
+                .IsUnicode(false)
+                .HasColumnName("PICKUP_ADDRESS");
+            entity.Property(e => e.PickupDate)
+                .HasColumnType("date")
+                .HasColumnName("PICKUP_DATE");
+            entity.Property(e => e.PickupTime).HasColumnName("PICKUP_TIME");
+            entity.Property(e => e.ReturnDate)
+                .HasColumnType("date")
+                .HasColumnName("RETURN_DATE");
+            entity.Property(e => e.ReturnTime).HasColumnName("RETURN_TIME");
+            entity.Property(e => e.TotalAmount)
+                .HasColumnType("decimal(10, 3)")
+                .HasColumnName("TOTAL_AMOUNT");
+        });
+
+        modelBuilder.Entity<CarBookingPassengerDetail>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK_CAR_BOOKING_USER_DETAILS");
+
+            entity.ToTable("CAR_BOOKING_PASSENGER_DETAILS");
+
+            entity.Property(e => e.Id).HasColumnName("ID");
+            entity.Property(e => e.BookingDetailId).HasColumnName("BOOKING_DETAIL_ID");
+            entity.Property(e => e.Email)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("EMAIL");
+            entity.Property(e => e.Name)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("NAME");
+            entity.Property(e => e.PhoneNumber)
+                .HasMaxLength(15)
+                .IsUnicode(false)
+                .HasColumnName("PHONE_NUMBER");
         });
 
         modelBuilder.Entity<CarDetail>(entity =>
@@ -403,6 +471,9 @@ public partial class BookingtimeContext : DbContext
                 .HasColumnName("CHARGES");
             entity.Property(e => e.CityId).HasColumnName("CITY_ID");
             entity.Property(e => e.CountryId).HasColumnName("COUNTRY_ID");
+            entity.Property(e => e.CreatedOn)
+                .HasColumnType("datetime")
+                .HasColumnName("CREATED_ON");
             entity.Property(e => e.CurrencyId).HasColumnName("CURRENCY_ID");
             entity.Property(e => e.Discount)
                 .HasColumnType("decimal(18, 2)")

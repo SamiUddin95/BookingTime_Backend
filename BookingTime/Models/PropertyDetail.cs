@@ -59,6 +59,8 @@ public partial class PropertyDetail
 
     public int? RatingId { get; set; }
 
+    public DateTime? CreatedOn { get; set; }
+
     public virtual City? City { get; set; }
 
     public virtual Country? Country { get; set; }
