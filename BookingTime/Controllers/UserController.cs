@@ -14,6 +14,7 @@ using MimeKit;
 using BookingTime.DTO.RequestModel;
 using Microsoft.EntityFrameworkCore;
 using BookingTime.DTO.ResponseModel;
+using BookingTime.Service;
 
 namespace BookingTime.Controllers
 {
@@ -22,10 +23,12 @@ namespace BookingTime.Controllers
     {
         private readonly IConfiguration _configuration;
         private readonly AppDbContext _context;
-        public UserController(IConfiguration configuration, AppDbContext context)
+        private readonly TokenService _tokenService;
+        public UserController(IConfiguration configuration, AppDbContext context, TokenService tokenService)
         {
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             _context = context;
+            _tokenService = tokenService;
         }
 
         [HttpPost]
@@ -54,7 +57,7 @@ namespace BookingTime.Controllers
                 {
                     return JsonConvert.SerializeObject(new { code = 200, msg = "Please enter the correct password!" });
                 }
-                var token = GenerateJwtToken(emailChk);
+                var token = _tokenService.GenerateJwtToken(emailChk);
 
                 return JsonConvert.SerializeObject(new { code = 200, msg = "Logged in successfully!", data = token });
             }
@@ -192,36 +195,6 @@ namespace BookingTime.Controllers
                 _context.SaveChanges();
             }
             return null;
-        }
-
-        private string GenerateJwtToken(User user)
-        {
-            // Define the secret key and algorithm for signing the token
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["TokenSecretKey"]));
-            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
-
-            // Set the claims for the JWT token (user information)
-            var claims = new[]
-            {
-                new Claim(JwtRegisteredClaimNames.Sub, user.Email),  // Subject: the user's email
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),  // JWT ID (unique)
-                new Claim(ClaimTypes.Name, user.Email),  // User's full name (example)
-                new Claim("IsVerified", user.IsVerified.ToString())  // Additional claim indicating if the account is verified
-             };
-
-            // Create the JWT token
-            var tokenDescriptor = new SecurityTokenDescriptor
-            {
-                Subject = new ClaimsIdentity(claims),
-                Expires = DateTime.UtcNow.AddHours(1),  // Set the token expiry time
-                SigningCredentials = credentials
-            };
-
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var token = tokenHandler.CreateToken(tokenDescriptor);
-
-            // Return the JWT token as a string
-            return tokenHandler.WriteToken(token);
         }
 
         [HttpGet("/api/GetAllUserList")]
