@@ -11,13 +11,16 @@ using System.Data;
 
 namespace BookingTime.Controllers
 {
+    [ApiController]
     public class AirportController : Controller
     {
         private readonly IConfiguration _configuration;
+        private readonly AppDbContext _context;
 
-        public AirportController(IConfiguration configuration)
+        public AirportController(IConfiguration configuration, AppDbContext context)
         {
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+            _context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
         [HttpGet("/api/GetAllTaxiFleetsizesList")]
@@ -25,38 +28,31 @@ namespace BookingTime.Controllers
         {
             try
             {
-                var connectionString = _configuration.GetConnectionString("BookingTimeConnection");
-
-                using (BookingtimeContext _context = new BookingtimeContext(_configuration))
-                {
-                    var country = await _context.TaxiFleetsizes.Select(x => new { x.Id, x.Name, }).ToListAsync();
-                    return Ok(country);
-                }
+                var country = await _context.TaxiFleetsizes
+                    .Select(x => new { x.Id, x.Name })
+                    .ToListAsync();
+                return Ok(country);
             }
             catch (Exception ex)
             {
                 return StatusCode(500, new { message = "Internal Server Error", error = ex.Message });
             }
-
         }
+
         [HttpGet("/api/GetAllTaxiVechiletypesList")]
         public async Task<IActionResult> GetAllTaxiVechiletypesListAsync()
         {
             try
             {
-                var connectionString = _configuration.GetConnectionString("BookingTimeConnection");
-
-                using (BookingtimeContext _context = new BookingtimeContext(_configuration))
-                {
-                    var country = await _context.TaxiVechiletypes.Select(x => new { x.Id, x.Name, x.Description }).ToListAsync();
-                    return Ok(country);
-                }
+                var types = await _context.TaxiVechiletypes
+                    .Select(x => new { x.Id, x.Name, x.Description })
+                    .ToListAsync();
+                return Ok(types);
             }
             catch (Exception ex)
             {
                 return StatusCode(500, new { message = "Internal Server Error", error = ex.Message });
             }
-
         }
 
         [HttpPost("/api/AddAirportTaxiDetail")]
@@ -65,12 +61,12 @@ namespace BookingTime.Controllers
         {
             try
             {
-                BookingtimeContext _context = new BookingtimeContext(_configuration);
+                var existingTaxi = _context.AirportTaxis.FirstOrDefault(t =>
+                    t.VehicleType == request.vehicleType &&
+                    t.CountryId == request.countryId &&
+                    t.CityId == request.cityId);
 
-                var taxi = _context.AirportTaxis.Where(taxi => taxi.VehicleType == request.vehicleType && taxi.CountryId == request.countryId
-                && taxi.CityId == request.cityId).FirstOrDefault();
-
-                if (taxi != null)
+                if (existingTaxi != null)
                 {
                     return BadRequest(new { Message = "A Taxi with the same details already exists.", success = false });
                 }
@@ -108,16 +104,15 @@ namespace BookingTime.Controllers
                 _context.AirportTaxis.Add(detail);
                 await _context.SaveChangesAsync();
 
-                return Ok(new { Message = $@"Successfully Created : TaxiId : {detail.Id}", success = true });
+                return Ok(new { Message = $"Successfully Created : TaxiId : {detail.Id}", success = true });
             }
             catch (ValidationException vx)
             {
-                throw new ValidationException(vx.Message != null ? vx.Message.ToString() : "Validation Error");
+                return BadRequest(new { message = vx.Message, success = false });
             }
             catch (Exception ex)
             {
-                throw new Exception(ex.InnerException != null ? ex.InnerException.ToString() : "Internal Server Error");
-
+                return StatusCode(500, new { message = ex.InnerException?.Message ?? ex.Message, success = false });
             }
         }
 
@@ -128,11 +123,7 @@ namespace BookingTime.Controllers
             try
             {
                 if (request == null)
-                {
                     return BadRequest(new { message = "Request body is null", success = false });
-                }
-
-                BookingtimeContext _context = new BookingtimeContext(_configuration);
 
                 var detail = new AirportTaxiBooking
                 {
@@ -146,35 +137,18 @@ namespace BookingTime.Controllers
                     Price = request.price,
                     Email = request.email,
                     CreatedBy = request.createdBy,
-                    CreatedAt = DateTime.UtcNow 
+                    CreatedAt = DateTime.UtcNow
                 };
 
-                try
-                {
-                    detail.PickupDate = request.pickupDate < new DateTime(1753, 1, 1) ? throw new Exception("PickupDate is invalid") : request.pickupDate;
-                }
-                catch (Exception e)
-                {
-                    return BadRequest(new { message = $"Invalid PickupDate: {request.pickupDate}", error = e.Message });
-                }
+                detail.PickupDate = request.pickupDate < new DateTime(1753, 1, 1)
+                    ? throw new Exception("PickupDate is invalid")
+                    : request.pickupDate;
 
-                try
-                {
-                    detail.BookingDate = request.bookingDate < new DateTime(1753, 1, 1) ? throw new Exception("BookingDate is invalid") : request.bookingDate;
-                }
-                catch (Exception e)
-                {
-                    return BadRequest(new { message = $"Invalid BookingDate: {request.bookingDate}", error = e.Message });
-                }
+                detail.BookingDate = request.bookingDate < new DateTime(1753, 1, 1)
+                    ? throw new Exception("BookingDate is invalid")
+                    : request.bookingDate;
 
-                try
-                {
-                    detail.PickupTime = request.pickupTime;
-                }
-                catch (Exception e)
-                {
-                    return BadRequest(new { message = $"Invalid PickupTime: {request.pickupTime}", error = e.Message });
-                }
+                detail.PickupTime = request.pickupTime;
 
                 _context.AirportTaxiBookings.Add(detail);
                 await _context.SaveChangesAsync();
@@ -191,104 +165,93 @@ namespace BookingTime.Controllers
             }
         }
 
-
         [HttpPost("/api/GetAirportTaxiList")]
         [EnableCors("AllowAngularApp")]
         public async Task<taxiResponseModeldetails> GetAirportTaxiDetailsListAsync([FromBody] AirportTaxiDetailsRequestModel request)
         {
+            var model = new taxiResponseModeldetails();
+            var carDetailsList = new List<AirportTaxiResponseModel>();
+
             try
             {
-                BookingtimeContext _context = new BookingtimeContext(_configuration);
-                taxiResponseModeldetails model = new taxiResponseModeldetails();
+                string connectionString = _configuration.GetConnectionString("BookingTimeConnection");
 
-                string? ConnectionString = _configuration.GetConnectionString("BookingTimeConnection");
-                List<AirportTaxiResponseModel> carDetailsList = new List<AirportTaxiResponseModel>();
-                SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder(ConnectionString);
-                builder.ConnectTimeout = 2500;
-                SqlConnection con = new SqlConnection(builder.ConnectionString);
-                System.Data.Common.DbDataReader sqlReader;
-                con.Open();
-
-                using (SqlCommand cmd = con.CreateCommand())
+                using (var con = new SqlConnection(connectionString))
                 {
-                    cmd.CommandText = "Sp_AirportTaxiList";
-                    cmd.CommandType = System.Data.CommandType.StoredProcedure;
-                    cmd.CommandTimeout = 0;
-
-                    cmd.Parameters.AddRange(new[]
-                 {
-                 new SqlParameter("@taxiId", request.Detail.taxiId),
-                 new SqlParameter("@cityId", request.Detail.cityId),
-                 new SqlParameter("@PickupDate", request.Detail.pickUpDate),
-                 new SqlParameter("@PickupTime", request.Detail.pickUpTime),
-
-                 new SqlParameter("@Page",request.PaginationInfo.Page),
-                 new SqlParameter("@PageSize", request.PaginationInfo.RowsPerPage)
-                });
-
-                    var adapter = new SqlDataAdapter(cmd);
-                    var ds = new DataSet();
-                    adapter.Fill(ds);
-                    DataTable count = ds.Tables[0];
-                    DataTable list = ds.Tables[1];
-
-                    carDetailsList = list.AsEnumerable()
-                    .Select(row =>
+                    con.Open();
+                    using (var cmd = new SqlCommand("Sp_AirportTaxiList", con))
                     {
-                        var vehicleTypeIds = row["vehicletype"] != DBNull.Value
-                            ? row["vehicletype"].ToString().Split(',').Select(int.Parse).ToList()
-                            : new List<int>();
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        cmd.CommandTimeout = 60;
 
-                        return new AirportTaxiResponseModel
+                        cmd.Parameters.AddWithValue("@taxiId", request.Detail.taxiId);
+                        cmd.Parameters.AddWithValue("@cityId", request.Detail.cityId);
+                        cmd.Parameters.AddWithValue("@PickupDate", request.Detail.pickUpDate);
+                        cmd.Parameters.AddWithValue("@PickupTime", request.Detail.pickUpTime);
+                        cmd.Parameters.AddWithValue("@Page", request.PaginationInfo.Page);
+                        cmd.Parameters.AddWithValue("@PageSize", request.PaginationInfo.RowsPerPage);
+
+                        var adapter = new SqlDataAdapter(cmd);
+                        var ds = new DataSet();
+                        adapter.Fill(ds);
+
+                        DataTable count = ds.Tables[0];
+                        DataTable list = ds.Tables[1];
+
+                        carDetailsList = list.AsEnumerable().Select(row =>
                         {
-                            id = row["ID"] != DBNull.Value ? Convert.ToInt32(row["ID"]) : 0,
-                            country = row["CountryName"] != DBNull.Value ? row["CountryName"].ToString() : string.Empty,
-                            city = row["CityName"] != DBNull.Value ? row["CityName"].ToString() : string.Empty,
-                            state = row["StateName"] != DBNull.Value ? row["StateName"].ToString() : string.Empty,
-                            operatingAirport = row["operatingAirport"] != DBNull.Value ? row["operatingAirport"].ToString() : string.Empty,
-                            bookingPerDay = row["bookingPerDay"] != DBNull.Value ? Convert.ToInt32(row["bookingPerDay"]) : 0,
-                            fleetSizeName = row["fleetSizeName"] != DBNull.Value ? row["fleetSizeName"].ToString() : string.Empty,
-                            website = row["website"] != DBNull.Value ? row["website"].ToString() : string.Empty,
-                            capacity = row["capacity"] != DBNull.Value ? Convert.ToInt32(row["capacity"]) : 0,
-                            basePrice = row["BasePrice"] != DBNull.Value ? Convert.ToDecimal(row["BasePrice"]) : 0,
-                            currency = row["currency"] != DBNull.Value ? row["currency"].ToString() : string.Empty,
-                            availabilityStatus = row["availabilityStatus"] != DBNull.Value ? row["availabilityStatus"].ToString() : string.Empty,
-                            imageUrl = row["imageUrl"] != DBNull.Value ? row["imageUrl"].ToString() : string.Empty,
-                            firstName = row["firstName"] != DBNull.Value ? row["firstName"].ToString() : string.Empty,
-                            lastName = row["lastName"] != DBNull.Value ? row["lastName"].ToString() : string.Empty,
-                            email = row["email"] != DBNull.Value ? row["email"].ToString() : string.Empty,
-                            contactNumber = row["contactNumber"] != DBNull.Value ? row["contactNumber"].ToString() : string.Empty,
-                            description = row["description"] != DBNull.Value ? row["description"].ToString() : string.Empty,
-                            status = row["status"] != DBNull.Value ? row["status"].ToString() : string.Empty,
+                            var vehicleTypeIds = row["vehicletype"] != DBNull.Value
+                                ? row["vehicletype"].ToString().Split(',').Select(int.Parse).ToList()
+                                : new List<int>();
 
-                            vehicleTypes = _context.TaxiVechiletypes
-                                .Where(a => vehicleTypeIds.Contains(a.Id))
-                                .Select(x => new VehicleTypeDto
-                                {
-                                    Id = x.Id,
-                                    Name = x.Name
-                                })
-                                .ToList()
-                        };
-                    }).ToList();
-                    model.Taxidetails = carDetailsList;
-                    model.TotalCount = Convert.ToInt32(count.Rows[0]["TotalCount"]);
+                            return new AirportTaxiResponseModel
+                            {
+                                id = Convert.ToInt32(row["ID"]),
+                                country = row["CountryName"]?.ToString(),
+                                city = row["CityName"]?.ToString(),
+                                state = row["StateName"]?.ToString(),
+                                operatingAirport = row["operatingAirport"]?.ToString(),
+                                bookingPerDay = Convert.ToInt32(row["bookingPerDay"]),
+                                fleetSizeName = row["fleetSizeName"]?.ToString(),
+                                website = row["website"]?.ToString(),
+                                capacity = Convert.ToInt32(row["capacity"]),
+                                basePrice = Convert.ToDecimal(row["BasePrice"]),
+                                currency = row["currency"]?.ToString(),
+                                availabilityStatus = row["availabilityStatus"]?.ToString(),
+                                imageUrl = row["imageUrl"]?.ToString(),
+                                firstName = row["firstName"]?.ToString(),
+                                lastName = row["lastName"]?.ToString(),
+                                email = row["email"]?.ToString(),
+                                contactNumber = row["contactNumber"]?.ToString(),
+                                description = row["description"]?.ToString(),
+                                status = row["status"]?.ToString(),
+                                vehicleTypes = _context.TaxiVechiletypes
+                                    .Where(a => vehicleTypeIds.Contains(a.Id))
+                                    .Select(x => new VehicleTypeDto
+                                    {
+                                        Id = x.Id,
+                                        Name = x.Name
+                                    })
+                                    .ToList()
+                            };
+                        }).ToList();
 
-                    return model;
+                        model.Taxidetails = carDetailsList;
+                        model.TotalCount = Convert.ToInt32(count.Rows[0]["TotalCount"]);
+                    }
                 }
 
+                return model;
             }
             catch (ValidationException vx)
             {
-                throw new ValidationException(vx.Message != null ? vx.Message.ToString() : "Validation Error");
+                throw new ValidationException(vx.Message ?? "Validation Error");
             }
             catch (Exception ex)
             {
-                throw new Exception(ex.InnerException != null ? ex.InnerException.ToString() : "Internal Server Error");
-
+                throw new Exception(ex.InnerException?.ToString() ?? "Internal Server Error");
             }
         }
-
 
         private async Task<string> SaveImageAsync(IFormFile? file, string folder = "")
         {
@@ -297,9 +260,8 @@ namespace BookingTime.Controllers
 
             string folderPath = _configuration["TaxiImagesPath"] + folder;
             if (!Directory.Exists(folderPath))
-            {
                 Directory.CreateDirectory(folderPath);
-            }
+
             string fileName = $"{Guid.NewGuid()}_{file.FileName}";
             string filePath = Path.Combine(folderPath, fileName);
 
@@ -309,10 +271,7 @@ namespace BookingTime.Controllers
             }
 
             string relativePath = filePath.Substring(filePath.IndexOf("assets", StringComparison.OrdinalIgnoreCase));
-
             return relativePath.Replace("\\", "/");
         }
-
-
     }
 }

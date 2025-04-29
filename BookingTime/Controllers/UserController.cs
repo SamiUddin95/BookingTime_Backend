@@ -21,11 +21,13 @@ namespace BookingTime.Controllers
     public class UserController : Controller
     {
         private readonly IConfiguration _configuration;
-        public UserController(IConfiguration configuration)
+        private readonly AppDbContext _context;
+        public UserController(IConfiguration configuration, AppDbContext context)
         {
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+            _context = context;
         }
-       
+
         [HttpPost]
         [Route("/api/login")]
         [EnableCors("AllowAngularApp")]
@@ -34,31 +36,30 @@ namespace BookingTime.Controllers
             try
             {
                 var connectionString = _configuration.GetConnectionString("BookingTimeConnection");
-                BookingtimeContext bTMContext = new BookingtimeContext(_configuration);
 
                 if (string.IsNullOrEmpty(form.Email) || string.IsNullOrEmpty(form.Password))
                 {
                     return JsonConvert.SerializeObject(new { code = 200, msg = "Please enter credentials!" });
-                } 
-                var emailChk = bTMContext.Users.SingleOrDefault(u => u.Email == form.Email);
+                }
+                var emailChk = _context.Users.SingleOrDefault(u => u.Email == form.Email);
                 if (emailChk == null)
                 {
                     return JsonConvert.SerializeObject(new { code = 200, msg = "Login details not found!" });
-                } 
+                }
                 if ((bool)!emailChk.IsVerified)
                 {
                     return JsonConvert.SerializeObject(new { code = 200, msg = "Please verify your account!" });
-                } 
+                }
                 if (emailChk.Password != form.Password)
                 {
                     return JsonConvert.SerializeObject(new { code = 200, msg = "Please enter the correct password!" });
-                } 
+                }
                 var token = GenerateJwtToken(emailChk);
 
                 return JsonConvert.SerializeObject(new { code = 200, msg = "Logged in successfully!", data = token });
             }
             catch (Exception ex)
-            { 
+            {
                 return JsonConvert.SerializeObject(new { code = 500, msg = "An error occurred while processing your request.", error = ex.Message });
             }
         }
@@ -71,9 +72,8 @@ namespace BookingTime.Controllers
             {
                 try
                 {
-                    BookingtimeContext bTMContext = new BookingtimeContext(_configuration);
-                    var emailChk = bTMContext.Users.SingleOrDefault(u => u.Email == form.Email);
-                    if (emailChk!=null)
+                    var emailChk = _context.Users.SingleOrDefault(u => u.Email == form.Email);
+                    if (emailChk != null)
                     {
                         return JsonConvert.SerializeObject(new { code = 409, msg = "User already Exist with this email!" });
                     }
@@ -81,11 +81,11 @@ namespace BookingTime.Controllers
                     user.Email = form.Email;
                     user.Password = form.Password;
                     user.IsVerified = false;
-                    user.VerificationToken= Guid.NewGuid().ToString();
-                    bTMContext.Users.Add(user);
-                    bTMContext.SaveChanges();
-                    var emailSend=SendVerificationEmail(user.Email, user.VerificationToken);
-                    if(emailSend!=null)
+                    user.VerificationToken = Guid.NewGuid().ToString();
+                    _context.Users.Add(user);
+                    _context.SaveChanges();
+                    var emailSend = SendVerificationEmail(user.Email, user.VerificationToken);
+                    if (emailSend != null)
                         return JsonConvert.SerializeObject(new { code = 200, msg = "We have send a verifcation email to your account please verify it!" });
 
                 }
@@ -109,25 +109,24 @@ namespace BookingTime.Controllers
             {
                 try
                 {
-                    BookingtimeContext bTMContext = new BookingtimeContext(_configuration);
-                    var usrCheck = bTMContext.Users.SingleOrDefault(u => u.Email == user.Email);
-                    if(usrCheck!=null)
+                    var usrCheck = _context.Users.SingleOrDefault(u => u.Email == user.Email);
                     if (usrCheck != null)
-                    {
-                        usrCheck.Id = user.Id;
-                        usrCheck.Email = user.Email;
-                        bTMContext.Users.Update(usrCheck);
-                        bTMContext.SaveChanges();
-                        //return JsonConvert.SerializeObject(new { id = usrCheck.UserId });
-                    }
-                    else
-                    {
-                        User usr = new User();
+                        if (usrCheck != null)
+                        {
+                            usrCheck.Id = user.Id;
+                            usrCheck.Email = user.Email;
+                            _context.Users.Update(usrCheck);
+                            _context.SaveChanges();
+                            //return JsonConvert.SerializeObject(new { id = usrCheck.UserId });
+                        }
+                        else
+                        {
+                            User usr = new User();
 
-                        bTMContext.Users.Add(usr);
-                        bTMContext.SaveChanges();
-                        //return JsonConvert.SerializeObject(new { id = usr.UserId });
-                    }
+                            _context.Users.Add(usr);
+                            _context.SaveChanges();
+                            //return JsonConvert.SerializeObject(new { id = usr.UserId });
+                        }
                 }
 
                 catch (Exception ex)
@@ -181,17 +180,16 @@ namespace BookingTime.Controllers
                 return false;
             }
         }
-   
+
         [HttpGet("verify/{token}")]
-        public object VerifyEmail(string token) 
+        public object VerifyEmail(string token)
         {
-            BookingtimeContext bTMContext = new BookingtimeContext(_configuration);
-            var userChk = bTMContext.Users.SingleOrDefault(u => u.VerificationToken == token);
-            if(userChk != null)
+            var userChk = _context.Users.SingleOrDefault(u => u.VerificationToken == token);
+            if (userChk != null)
             {
                 userChk.IsVerified = true;
-                bTMContext.Users.Update(userChk);
-                bTMContext.SaveChanges();
+                _context.Users.Update(userChk);
+                _context.SaveChanges();
             }
             return null;
         }
@@ -232,21 +230,17 @@ namespace BookingTime.Controllers
         {
             try
             {
-                var connectionString = _configuration.GetConnectionString("BookingTimeConnection");
 
-                using (BookingtimeContext _context = new BookingtimeContext(_configuration))
+                var user = await _context.Users.Select(x => new
                 {
+                    Id = x.Id,
+                    Name = x.FullName,
+                    Email = x.Email,
+                    Verified = x.IsVerified,
 
-                    var user = await _context.Users.Select(x => new
-                    {
-                        Id = x.Id,
-                        Name = x.FullName,
-                        Email = x.Email,
-                        Verified = x.IsVerified,
+                }).ToListAsync();
+                return Ok(user);
 
-                    }).ToListAsync();
-                    return Ok(user);
-                }
             }
             catch (Exception ex)
             {

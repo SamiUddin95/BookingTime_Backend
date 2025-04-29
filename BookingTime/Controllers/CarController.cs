@@ -19,10 +19,12 @@ namespace BookingTime.Controllers
     public class CarController : Controller
     {
         private readonly IConfiguration _configuration;
+        private readonly AppDbContext _context;
 
-        public CarController(IConfiguration configuration)
+        public CarController(IConfiguration configuration, AppDbContext context)
         {
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+            _context = context;
         }
 
 
@@ -31,19 +33,14 @@ namespace BookingTime.Controllers
         {
             try
             {
-                var connectionString = _configuration.GetConnectionString("BookingTimeConnection");
-
-                using (BookingtimeContext _context = new BookingtimeContext(_configuration))
+                var FuelType = await _context.FuelTypes.Select(x => new
                 {
+                    Id = x.Id,
+                    Name = x.FuelType1,
 
-                    var FuelType = await _context.FuelTypes.Select(x => new
-                    {
-                        Id = x.Id,
-                        Name = x.FuelType1,
+                }).ToListAsync();
+                return Ok(FuelType);
 
-                    }).ToListAsync();
-                    return Ok(FuelType);
-                }
             }
             catch (Exception ex)
             {
@@ -57,19 +54,15 @@ namespace BookingTime.Controllers
         {
             try
             {
-                var connectionString = _configuration.GetConnectionString("BookingTimeConnection");
 
-                using (BookingtimeContext _context = new BookingtimeContext(_configuration))
+                var OdometerReading = await _context.OdometerReadings.Select(x => new
                 {
+                    Id = x.Id,
+                    Name = x.OdometerReading1,
 
-                    var OdometerReading = await _context.OdometerReadings.Select(x => new
-                    {
-                        Id = x.Id,
-                        Name = x.OdometerReading1,
+                }).ToListAsync();
+                return Ok(OdometerReading);
 
-                    }).ToListAsync();
-                    return Ok(OdometerReading);
-                }
             }
             catch (Exception ex)
             {
@@ -83,19 +76,15 @@ namespace BookingTime.Controllers
         {
             try
             {
-                var connectionString = _configuration.GetConnectionString("BookingTimeConnection");
 
-                using (BookingtimeContext _context = new BookingtimeContext(_configuration))
+                var SeatbeltType = await _context.SeatbeltTypes.Select(x => new
                 {
+                    Id = x.Id,
+                    Name = x.SeatbeltType1,
 
-                    var SeatbeltType = await _context.SeatbeltTypes.Select(x => new
-                    {
-                        Id = x.Id,
-                        Name = x.SeatbeltType1,
+                }).ToListAsync();
+                return Ok(SeatbeltType);
 
-                    }).ToListAsync();
-                    return Ok(SeatbeltType);
-                }
             }
             catch (Exception ex)
             {
@@ -109,19 +98,14 @@ namespace BookingTime.Controllers
         {
             try
             {
-                var connectionString = _configuration.GetConnectionString("BookingTimeConnection");
-
-                using (BookingtimeContext _context = new BookingtimeContext(_configuration))
+                var VehicleCondition = await _context.VehicleConditions.Select(x => new
                 {
+                    Id = x.Id,
+                    Name = x.Condition,
 
-                    var VehicleCondition = await _context.VehicleConditions.Select(x => new
-                    {
-                        Id = x.Id,
-                        Name = x.Condition,
+                }).ToListAsync();
+                return Ok(VehicleCondition);
 
-                    }).ToListAsync();
-                    return Ok(VehicleCondition);
-                }
             }
             catch (Exception ex)
             {
@@ -135,19 +119,16 @@ namespace BookingTime.Controllers
         {
             try
             {
-                var connectionString = _configuration.GetConnectionString("BookingTimeConnection");
 
-                using (BookingtimeContext _context = new BookingtimeContext(_configuration))
+
+                var VehicleMake = await _context.VehicleMakes.Select(x => new
                 {
+                    Id = x.Id,
+                    Name = x.VehicleMake1,
 
-                    var VehicleMake = await _context.VehicleMakes.Select(x => new
-                    {
-                        Id = x.Id,
-                        Name = x.VehicleMake1,
+                }).ToListAsync();
+                return Ok(VehicleMake);
 
-                    }).ToListAsync();
-                    return Ok(VehicleMake);
-                }
             }
             catch (Exception ex)
             {
@@ -161,19 +142,16 @@ namespace BookingTime.Controllers
         {
             try
             {
-                var connectionString = _configuration.GetConnectionString("BookingTimeConnection");
 
-                using (BookingtimeContext _context = new BookingtimeContext(_configuration))
+
+                var VehicleYear = await _context.VehicleYears.Select(x => new
                 {
+                    Id = x.Id,
+                    Name = x.VehicleYear1,
 
-                    var VehicleYear = await _context.VehicleYears.Select(x => new
-                    {
-                        Id = x.Id,
-                        Name = x.VehicleYear1,
+                }).ToListAsync();
+                return Ok(VehicleYear);
 
-                    }).ToListAsync();
-                    return Ok(VehicleYear);
-                }
             }
             catch (Exception ex)
             {
@@ -188,7 +166,6 @@ namespace BookingTime.Controllers
         {
             try
             {
-                BookingtimeContext _context = new BookingtimeContext(_configuration);
 
                 string imagePath = string.Empty;
                 var existingCarDetails = await _context.CarDetails
@@ -283,7 +260,6 @@ namespace BookingTime.Controllers
         {
             try
             {
-                BookingtimeContext _context = new BookingtimeContext(_configuration);
 
                 string? ConnectionString = _configuration.GetConnectionString("BookingTimeConnection");
                 List<CarDetailsResponseModel> carDetailsList = new List<CarDetailsResponseModel>();
@@ -352,7 +328,7 @@ namespace BookingTime.Controllers
                             features = row["Features"] != DBNull.Value ? row["Features"].ToString() : string.Empty,
                             thumbnail = row["Photos"] != DBNull.Value ? row["Photos"].ToString() : string.Empty,
                             capacity = row["PassengerCapacity"] != DBNull.Value ? row["PassengerCapacity"].ToString() : string.Empty,
-                            basePrice = row["BasePrice"] != DBNull.Value ?Convert.ToDecimal(row["BasePrice"]) : 0,
+                            basePrice = row["BasePrice"] != DBNull.Value ? Convert.ToDecimal(row["BasePrice"]) : 0,
                             images = _context.CarImages
                             .Where(pa => pa.CarId == Convert.ToInt32(row["ID"]))
                             .Select(x => new image
@@ -386,7 +362,6 @@ namespace BookingTime.Controllers
         {
             try
             {
-                BookingtimeContext _context = new BookingtimeContext(_configuration);
                 var detail = new CarBookingDetail
                 {
                     CarId = request.carId,

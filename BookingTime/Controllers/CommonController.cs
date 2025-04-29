@@ -7,10 +7,12 @@ namespace BookingTime.Controllers
     public class CommonController : Controller
     {
         private readonly IConfiguration _configuration;
+        private readonly AppDbContext _context;
 
-        public CommonController(IConfiguration configuration)
+        public CommonController(IConfiguration configuration, AppDbContext context)
         {
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+            _context = context;
         }
 
 
@@ -19,13 +21,9 @@ namespace BookingTime.Controllers
         {
             try
             {
-                var connectionString = _configuration.GetConnectionString("BookingTimeConnection");
+                var country = await _context.Countries.Select(x => new { x.CountryId, x.CountryName, x.CountryCode }).ToListAsync();
+                return Ok(country);
 
-                using (BookingtimeContext _context = new BookingtimeContext(_configuration))
-                {
-                    var country = await _context.Countries.Select(x => new { x.CountryId, x.CountryName, x.CountryCode }).ToListAsync();
-                    return Ok(country);
-                }
             }
             catch (Exception ex)
             {
@@ -39,31 +37,27 @@ namespace BookingTime.Controllers
         {
             try
             {
-                var connectionString = _configuration.GetConnectionString("BookingTimeConnection");
-
-                using (BookingtimeContext _context = new BookingtimeContext(_configuration))
+                if (countryId == 0)
                 {
-                    if (countryId == 0)
+                    var state = await _context.States.Select(x => new
                     {
-                        var state = await _context.States.Select(x => new
-                        {
-                            x.CountryId,
-                            x.StateId,
-                            x.StateName
-                        }).ToListAsync();
-                        return Ok(state);
-                    }
-                    else
-                    {
-                        var state = await _context.States.Where(x => x.CountryId == countryId).Select(x => new
-                        {
-                            x.CountryId,
-                            x.StateId,
-                            x.StateName
-                        }).ToListAsync();
-                        return Ok(state);
-                    }
+                        x.CountryId,
+                        x.StateId,
+                        x.StateName
+                    }).ToListAsync();
+                    return Ok(state);
                 }
+                else
+                {
+                    var state = await _context.States.Where(x => x.CountryId == countryId).Select(x => new
+                    {
+                        x.CountryId,
+                        x.StateId,
+                        x.StateName
+                    }).ToListAsync();
+                    return Ok(state);
+                }
+
             }
             catch (Exception ex)
             {
@@ -77,31 +71,28 @@ namespace BookingTime.Controllers
         {
             try
             {
-                var connectionString = _configuration.GetConnectionString("BookingTimeConnection");
 
-                using (BookingtimeContext _context = new BookingtimeContext(_configuration))
+                if (countryId == 0)
                 {
-                    if (countryId == 0)
+                    var Cities = await _context.Cities.Select(x => new
                     {
-                        var Cities = await _context.Cities.Select(x => new
-                        {
-                            x.CountryId,
-                            x.CityId,
-                            x.CityName
-                        }).ToListAsync();
-                        return Ok(Cities);
-                    }
-                    else
-                    {
-                        var Cities = await _context.Cities.Where(x => x.CountryId == countryId).Select(x => new
-                        {
-                            x.CountryId,
-                            x.CityId,
-                            x.CityName
-                        }).ToListAsync();
-                        return Ok(Cities);
-                    }
+                        x.CountryId,
+                        x.CityId,
+                        x.CityName
+                    }).ToListAsync();
+                    return Ok(Cities);
                 }
+                else
+                {
+                    var Cities = await _context.Cities.Where(x => x.CountryId == countryId).Select(x => new
+                    {
+                        x.CountryId,
+                        x.CityId,
+                        x.CityName
+                    }).ToListAsync();
+                    return Ok(Cities);
+                }
+
             }
             catch (Exception ex)
             {
@@ -109,39 +100,36 @@ namespace BookingTime.Controllers
             }
 
         }
-        
+
         [HttpGet("/api/GetCityByStateId/{stateId}")]
         public async Task<IActionResult> GetCityByStateIdListAsync(int stateId)
         {
             try
             {
-                var connectionString = _configuration.GetConnectionString("BookingTimeConnection");
 
-                using (BookingtimeContext _context = new BookingtimeContext(_configuration))
+                if (stateId == 0)
                 {
-                    if (stateId == 0)
+                    var Cities = await _context.Cities.Select(x => new
                     {
-                        var Cities = await _context.Cities.Select(x => new
-                        {
-                            x.CountryId,
-                            x.CityId,
-                            x.CityName,
-                            x.StateId
-                        }).ToListAsync();
-                        return Ok(Cities);
-                    }
-                    else
-                    {
-                        var Cities = await _context.Cities.Where(x => x.StateId == stateId).Select(x => new
-                        {
-                            x.CountryId,
-                            x.CityId,
-                            x.CityName,
-                            x.StateId
-                        }).ToListAsync();
-                        return Ok(Cities);
-                    }
+                        x.CountryId,
+                        x.CityId,
+                        x.CityName,
+                        x.StateId
+                    }).ToListAsync();
+                    return Ok(Cities);
                 }
+                else
+                {
+                    var Cities = await _context.Cities.Where(x => x.StateId == stateId).Select(x => new
+                    {
+                        x.CountryId,
+                        x.CityId,
+                        x.CityName,
+                        x.StateId
+                    }).ToListAsync();
+                    return Ok(Cities);
+                }
+
             }
             catch (Exception ex)
             {
@@ -149,39 +137,36 @@ namespace BookingTime.Controllers
             }
 
         }
-        
+
         [HttpGet("/api/GetCurrencyBycountryId/{countryId}")]
         public async Task<IActionResult> GetCurrencyBycountryIdListAsync(int countryId)
         {
             try
             {
-                var connectionString = _configuration.GetConnectionString("BookingTimeConnection");
 
-                using (BookingtimeContext _context = new BookingtimeContext(_configuration))
+                if (countryId == 0)
                 {
-                    if (countryId == 0)
+                    var Currency = await _context.Currencies.Select(x => new
                     {
-                        var Currency = await _context.Currencies.Select(x => new
-                        {
-                            x.Id,
-                            x.Name,
-                            x.Symbol,
-                            x.CountryId
-                        }).ToListAsync();
-                        return Ok(Currency);
-                    }
-                    else
-                    {
-                        var Currency = await _context.Currencies.Where(x => x.CountryId == countryId).Select(x => new
-                        {
-                            x.Id,
-                            x.Name,
-                            x.Symbol,
-                            x.CountryId
-                        }).ToListAsync();
-                        return Ok(Currency);
-                    }
+                        x.Id,
+                        x.Name,
+                        x.Symbol,
+                        x.CountryId
+                    }).ToListAsync();
+                    return Ok(Currency);
                 }
+                else
+                {
+                    var Currency = await _context.Currencies.Where(x => x.CountryId == countryId).Select(x => new
+                    {
+                        x.Id,
+                        x.Name,
+                        x.Symbol,
+                        x.CountryId
+                    }).ToListAsync();
+                    return Ok(Currency);
+                }
+
             }
             catch (Exception ex)
             {
@@ -195,18 +180,15 @@ namespace BookingTime.Controllers
         {
             try
             {
-                var connectionString = _configuration.GetConnectionString("BookingTimeConnection");
 
-                using (BookingtimeContext _context = new BookingtimeContext(_configuration))
+
+                var Amenities = await _context.Amenities.Select(x => new
                 {
+                    x.Id,
+                    x.Amenities
+                }).ToListAsync();
+                return Ok(Amenities);
 
-                    var Amenities = await _context.Amenities.Select(x => new
-                    {
-                        x.Id,
-                        x.Amenities
-                    }).ToListAsync();
-                    return Ok(Amenities);
-                }
             }
             catch (Exception ex)
             {
@@ -220,18 +202,15 @@ namespace BookingTime.Controllers
         {
             try
             {
-                var connectionString = _configuration.GetConnectionString("BookingTimeConnection");
 
-                using (BookingtimeContext _context = new BookingtimeContext(_configuration))
+
+                var Ratings = await _context.Ratings.Select(x => new
                 {
+                    x.Id,
+                    x.Ratings
+                }).ToListAsync();
+                return Ok(Ratings);
 
-                    var Ratings = await _context.Ratings.Select(x => new
-                    {
-                        x.Id,
-                        x.Ratings
-                    }).ToListAsync();
-                    return Ok(Ratings);
-                }
             }
             catch (Exception ex)
             {
@@ -245,19 +224,16 @@ namespace BookingTime.Controllers
         {
             try
             {
-                var connectionString = _configuration.GetConnectionString("BookingTimeConnection");
 
-                using (BookingtimeContext _context = new BookingtimeContext(_configuration))
+
+                var HotelTypes = await _context.HotelTypes.Select(x => new
                 {
+                    Id = x.ListTypeId,
+                    Name = x.HotelType1,
+                    Description = x.Description ?? ""
+                }).ToListAsync();
+                return Ok(HotelTypes);
 
-                    var HotelTypes = await _context.HotelTypes.Select(x => new
-                    {
-                        Id = x.ListTypeId,
-                        Name = x.HotelType1,
-                        Description = x.Description ?? ""
-                    }).ToListAsync();
-                    return Ok(HotelTypes);
-                }
             }
             catch (Exception ex)
             {
@@ -271,19 +247,16 @@ namespace BookingTime.Controllers
         {
             try
             {
-                var connectionString = _configuration.GetConnectionString("BookingTimeConnection");
 
-                using (BookingtimeContext _context = new BookingtimeContext(_configuration))
+
+                var AdditionalInfo = await _context.AdditionalInfos.Select(x => new
                 {
+                    Id = x.Id,
+                    Name = x.Name,
 
-                    var AdditionalInfo = await _context.AdditionalInfos.Select(x => new
-                    {
-                        Id = x.Id,
-                        Name = x.Name,
+                }).ToListAsync();
+                return Ok(AdditionalInfo);
 
-                    }).ToListAsync();
-                    return Ok(AdditionalInfo);
-                }
             }
             catch (Exception ex)
             {
