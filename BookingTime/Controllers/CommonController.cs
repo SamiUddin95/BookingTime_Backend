@@ -1,6 +1,9 @@
-﻿using BookingTime.Models;
+﻿using BookingTime.DTO.ResponseModel;
+using BookingTime.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using System.Data;
 
 namespace BookingTime.Controllers
 {
@@ -264,6 +267,43 @@ namespace BookingTime.Controllers
             }
 
         }
+
+        [HttpGet("/api/GetCityAndCountryList")]
+        public async Task<IActionResult> GetCityListAsync()
+        {
+            var result = new List<CityWithCountryModel>();
+
+            try
+            {
+                using (var conn = new SqlConnection(_context.Database.GetConnectionString()))
+                {
+                    await conn.OpenAsync();
+                    using (var cmd = new SqlCommand("GetCityAndCountryList", conn))
+                    {
+                        cmd.CommandType = CommandType.StoredProcedure;
+
+                        using (var reader = await cmd.ExecuteReaderAsync())
+                        {
+                            while (await reader.ReadAsync())
+                            {
+                                result.Add(new CityWithCountryModel
+                                {
+                                    Id = reader.GetInt64(0),
+                                    Name = reader.GetString(1)
+                                });
+                            }
+                        }
+                    }
+                }
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Internal Server Error", error = ex.Message });
+            }
+        }
+
 
     }
 }
