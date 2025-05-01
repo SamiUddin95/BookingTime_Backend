@@ -33,7 +33,6 @@ namespace BookingTime.Controllers
 
         [HttpPost]
         [Route("/api/login")]
-        [EnableCors("AllowAngularApp")]
         public object Login([FromBody] LoginRequest form)
         {
             try
