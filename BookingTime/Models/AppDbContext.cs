@@ -6,8 +6,6 @@ namespace BookingTime.Models;
 
 public partial class AppDbContext : DbContext
 {
-
-    // Constructor that takes DbContextOptions
     public AppDbContext(DbContextOptions<AppDbContext> options)
         : base(options)
     {
@@ -20,6 +18,12 @@ public partial class AppDbContext : DbContext
     public virtual DbSet<AirportTaxiBooking> AirportTaxiBookings { get; set; }
 
     public virtual DbSet<Amenity> Amenities { get; set; }
+
+    public virtual DbSet<Attraction> Attractions { get; set; }
+
+    public virtual DbSet<AttractionCategory> AttractionCategories { get; set; }
+
+    public virtual DbSet<AttractionImage> AttractionImages { get; set; }
 
     public virtual DbSet<BeachAccess> BeachAccesses { get; set; }
 
@@ -44,6 +48,12 @@ public partial class AppDbContext : DbContext
     public virtual DbSet<FuelType> FuelTypes { get; set; }
 
     public virtual DbSet<FunThingsToDo> FunThingsToDos { get; set; }
+
+    public virtual DbSet<Group> Groups { get; set; }
+
+    public virtual DbSet<GroupPermission> GroupPermissions { get; set; }
+
+    public virtual DbSet<GroupUser> GroupUsers { get; set; }
 
     public virtual DbSet<HotelType> HotelTypes { get; set; }
 
@@ -89,8 +99,6 @@ public partial class AppDbContext : DbContext
 
     public virtual DbSet<Rating> Ratings { get; set; }
 
-    public virtual DbSet<ReviewScore> ReviewScores { get; set; }
-
     public virtual DbSet<RoomAccessibility> RoomAccessibilities { get; set; }
 
     public virtual DbSet<RoomFacility> RoomFacilities { get; set; }
@@ -113,10 +121,7 @@ public partial class AppDbContext : DbContext
 
     public virtual DbSet<VehicleYear> VehicleYears { get; set; }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-            => optionsBuilder.UseSqlServer("Server=DESKTOP-HEDM8AQ;Database=BOOKINGTIME;Trusted_Connection=True;TrustServerCertificate=True;");
-
+    public virtual DbSet<VwTopDestinationsByAttraction> VwTopDestinationsByAttractions { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -250,6 +255,46 @@ public partial class AppDbContext : DbContext
                 .IsUnicode(false);
         });
 
+        modelBuilder.Entity<Attraction>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__Attracti__3214EC079574BA04");
+
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.Price).HasColumnType("decimal(10, 2)");
+            entity.Property(e => e.ShortDescription).HasMaxLength(500);
+            entity.Property(e => e.Title).HasMaxLength(200);
+
+            entity.HasOne(d => d.Category).WithMany(p => p.Attractions)
+                .HasForeignKey(d => d.CategoryId)
+                .HasConstraintName("FK_Attractions_Categories");
+
+            entity.HasOne(d => d.City).WithMany(p => p.Attractions)
+                .HasForeignKey(d => d.CityId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Attractions_City");
+        });
+
+        modelBuilder.Entity<AttractionCategory>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__Attracti__3214EC070CB57295");
+
+            entity.Property(e => e.Name).HasMaxLength(100);
+        });
+
+        modelBuilder.Entity<AttractionImage>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__Attracti__3214EC0702D921E5");
+
+            entity.Property(e => e.IsPrimary).HasDefaultValueSql("((0))");
+
+            entity.HasOne(d => d.Attraction).WithMany(p => p.AttractionImages)
+                .HasForeignKey(d => d.AttractionId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_AttractionImages_Attractions");
+        });
+
         modelBuilder.Entity<BeachAccess>(entity =>
         {
             entity.ToTable("Beach_Accesses");
@@ -376,7 +421,6 @@ public partial class AppDbContext : DbContext
 
             entity.HasOne(d => d.FuelType).WithMany(p => p.CarDetails)
                 .HasForeignKey(d => d.FuelTypeId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_CAR_DETAILS_Fuel_Type");
 
             entity.HasOne(d => d.Make).WithMany(p => p.CarDetails)
@@ -414,11 +458,6 @@ public partial class AppDbContext : DbContext
                 .HasMaxLength(250)
                 .IsUnicode(false)
                 .HasColumnName("IMAGE_PATH");
-
-            entity.HasOne(d => d.Car).WithMany(p => p.CarImages)
-                .HasForeignKey(d => d.CarId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_CAR_IMAGES_CAR_DETAILS");
         });
 
         modelBuilder.Entity<City>(entity =>
@@ -428,10 +467,11 @@ public partial class AppDbContext : DbContext
             entity.ToTable("City");
 
             entity.Property(e => e.CityName).HasMaxLength(100);
+            entity.Property(e => e.ImageUrl).HasMaxLength(50);
 
             entity.HasOne(d => d.Country).WithMany(p => p.Cities)
                 .HasForeignKey(d => d.CountryId)
-                .HasConstraintName("FK__City__CountryId__693CA210");
+                .HasConstraintName("FK__City__CountryId__76619304");
         });
 
         modelBuilder.Entity<Country>(entity =>
@@ -499,6 +539,43 @@ public partial class AppDbContext : DbContext
                 .HasColumnName("Fun_Things");
         });
 
+        modelBuilder.Entity<Group>(entity =>
+        {
+            entity.HasKey(e => e.GroupId).HasName("PK_GROUP");
+
+            entity.ToTable("GROUPS");
+
+            entity.Property(e => e.GroupId)
+                .ValueGeneratedNever()
+                .HasColumnName("GROUP_ID");
+            entity.Property(e => e.Name)
+                .HasMaxLength(100)
+                .IsUnicode(false)
+                .HasColumnName("NAME");
+        });
+
+        modelBuilder.Entity<GroupPermission>(entity =>
+        {
+            entity.ToTable("GROUP_PERMISSION");
+
+            entity.Property(e => e.Id).HasColumnName("ID");
+            entity.Property(e => e.GroupId).HasColumnName("GROUP_ID");
+            entity.Property(e => e.PermissionId).HasColumnName("PERMISSION_ID");
+        });
+
+        modelBuilder.Entity<GroupUser>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToTable("GROUP_USER");
+
+            entity.Property(e => e.GroupId).HasColumnName("GROUP_ID");
+            entity.Property(e => e.UserId)
+                .HasMaxLength(10)
+                .IsUnicode(false)
+                .HasColumnName("USER_ID");
+        });
+
         modelBuilder.Entity<HotelType>(entity =>
         {
             entity.HasKey(e => e.ListTypeId).HasName("PK__HotelTyp__5268C8CAE61B7CBA");
@@ -506,6 +583,8 @@ public partial class AppDbContext : DbContext
             entity.ToTable("HotelType");
 
             entity.HasIndex(e => e.HotelType1, "UQ__HotelTyp__F638B67254815968").IsUnique();
+
+            entity.HasIndex(e => e.HotelType1, "UQ__HotelTyp__F638B672B6F89D12").IsUnique();
 
             entity.Property(e => e.Description).HasMaxLength(255);
             entity.Property(e => e.HotelType1)
@@ -563,6 +642,9 @@ public partial class AppDbContext : DbContext
             entity.ToTable("PROPERTY_DETAILS");
 
             entity.Property(e => e.Id).HasColumnName("ID");
+            entity.Property(e => e.Amenities)
+                .HasMaxLength(200)
+                .HasColumnName("AMENITIES");
             entity.Property(e => e.AmenitiesId).HasColumnName("Amenities_Id");
             entity.Property(e => e.BasePrice)
                 .HasColumnType("decimal(18, 2)")
@@ -575,10 +657,16 @@ public partial class AppDbContext : DbContext
                 .HasColumnName("CHARGES");
             entity.Property(e => e.CityId).HasColumnName("CITY_ID");
             entity.Property(e => e.CountryId).HasColumnName("COUNTRY_ID");
+            entity.Property(e => e.CreatedOn)
+                .HasColumnType("datetime")
+                .HasColumnName("CREATED_ON");
             entity.Property(e => e.CurrencyId).HasColumnName("CURRENCY_ID");
             entity.Property(e => e.Discount)
                 .HasColumnType("decimal(18, 2)")
                 .HasColumnName("DISCOUNT");
+            entity.Property(e => e.Images)
+                .IsUnicode(false)
+                .HasColumnName("IMAGES");
             entity.Property(e => e.Latitude)
                 .HasMaxLength(100)
                 .HasColumnName("LATITUDE");
@@ -612,7 +700,7 @@ public partial class AppDbContext : DbContext
                 .HasColumnName("TOTAL_ROOM");
             entity.Property(e => e.UsageType)
                 .HasMaxLength(50)
-                .IsUnicode(false)
+                .IsFixedLength()
                 .HasColumnName("USAGE_TYPE");
 
             entity.HasOne(d => d.City).WithMany(p => p.PropertyDetails)
@@ -752,11 +840,6 @@ public partial class AppDbContext : DbContext
                 .HasColumnType("decimal(10, 3)")
                 .HasColumnName("PRICE");
             entity.Property(e => e.PropertyId).HasColumnName("PROPERTY_ID");
-
-            entity.HasOne(d => d.Property).WithMany(p => p.PropertyRooms)
-                .HasForeignKey(d => d.PropertyId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_PROPERTY_ROOMS_PROPERTY");
         });
 
         modelBuilder.Entity<PropertyRoomAccessibility>(entity =>
@@ -790,16 +873,6 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.Ratings)
                 .HasMaxLength(10)
                 .IsUnicode(false);
-        });
-
-        modelBuilder.Entity<ReviewScore>(entity =>
-        {
-            entity.ToTable("Review_Score");
-
-            entity.Property(e => e.ReviewScore1)
-                .HasMaxLength(50)
-                .IsUnicode(false)
-                .HasColumnName("Review_Score");
         });
 
         modelBuilder.Entity<RoomAccessibility>(entity =>
@@ -946,9 +1019,18 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.VehicleYear1).HasColumnName("Vehicle_Year");
         });
 
+        modelBuilder.Entity<VwTopDestinationsByAttraction>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("Vw_TopDestinationsByAttractions");
+
+            entity.Property(e => e.CityName).HasMaxLength(100);
+            entity.Property(e => e.ImageUrl).HasMaxLength(50);
+        });
+
         OnModelCreatingPartial(modelBuilder);
     }
 
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
 }
-
