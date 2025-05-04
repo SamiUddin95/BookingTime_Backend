@@ -458,6 +458,15 @@ namespace BookingTime.Controllers
             {
                 string amenities = null;
                 string hotelTypes = null;
+                string beach = null;
+                string entirePlaces = null;
+                string facilities = null;
+                string funthing = null;
+                string popular = null;
+                string propertyType = null;
+                string propertyAccess = null;
+                string roomAccess = null;
+                string roomFacility = null;
 
                 string? ConnectionString = _configuration.GetConnectionString("BookingTimeConnection");
                 List<PropertiesListResponseModel> propertylist = new List<PropertiesListResponseModel>();
@@ -479,6 +488,60 @@ namespace BookingTime.Controllers
                    ? string.Join(",", request.Details.hotelTypes.Select(h => h.hotelTypeId))
                    : null;
                 }
+                if (request.Details.BeachAccess != null)
+                {
+                    beach = request.Details.BeachAccess != null && request.Details.BeachAccess.Any()
+                   ? string.Join(",", request.Details.BeachAccess.Select(h => h.Id))
+                   : null;
+                }
+                if (request.Details.EntirePlaces != null)
+                {
+                    entirePlaces = request.Details.EntirePlaces != null && request.Details.EntirePlaces.Any()
+                   ? string.Join(",", request.Details.EntirePlaces.Select(h => h.Id))
+                   : null;
+                }
+                if (request.Details.Facilities != null)
+                {
+                    facilities = request.Details.Facilities != null && request.Details.Facilities.Any()
+                   ? string.Join(",", request.Details.Facilities.Select(h => h.Id))
+                   : null;
+                }
+                if (request.Details.FunThingsToDo!= null)
+                {
+                    funthing = request.Details.FunThingsToDo != null && request.Details.FunThingsToDo.Any()
+                   ? string.Join(",", request.Details.FunThingsToDo.Select(h => h.Id))
+                   : null;
+                }
+                if (request.Details.PropertyType != null)
+                {
+                    propertyType = request.Details.PropertyType != null && request.Details.PropertyType.Any()
+                   ? string.Join(",", request.Details.PropertyType.Select(h => h.Id))
+                   : null;
+                }
+                if (request.Details.PopularFilter != null)
+                {
+                    popular = request.Details.PopularFilter != null && request.Details.PopularFilter.Any()
+                   ? string.Join(",", request.Details.PopularFilter.Select(h => h.Id))
+                   : null;
+                }
+                if (request.Details.PropertyAccessibility != null)
+                {
+                    propertyAccess = request.Details.PropertyAccessibility != null && request.Details.PropertyAccessibility.Any()
+                   ? string.Join(",", request.Details.PropertyAccessibility.Select(h => h.Id))
+                   : null;
+                }
+                if (request.Details.RoomAccessibility != null)
+                {
+                    roomAccess = request.Details.RoomAccessibility != null && request.Details.RoomAccessibility.Any()
+                   ? string.Join(",", request.Details.RoomAccessibility.Select(h => h.Id))
+                   : null;
+                }
+                if (request.Details.RoomFacilities != null)
+                {
+                    roomFacility = request.Details.RoomFacilities != null && request.Details.RoomFacilities.Any()
+                   ? string.Join(",", request.Details.RoomFacilities.Select(h => h.Id))
+                   : null;
+                }
 
                 using (SqlCommand cmd = con.CreateCommand())
                 {
@@ -489,7 +552,19 @@ namespace BookingTime.Controllers
                     cmd.Parameters.AddRange(new[]
                  {
                  new SqlParameter("@HotelTypeId", hotelTypes),
+                 new SqlParameter("@BeachesId", beach),
+                 new SqlParameter("@EntirePlacesId", entirePlaces),
+                 new SqlParameter("@FacilitiesId", facilities),
+                 new SqlParameter("@FunThingsId", funthing),
+                 new SqlParameter("@PopularFilterId", popular),
+                 new SqlParameter("@PropertyTypeId", propertyType),
+                 new SqlParameter("@PropertyAccessibilityId", propertyAccess),
+                 new SqlParameter("@RoomAccessibilityId", roomAccess),
+                 new SqlParameter("@RoomFacilitiesId", roomFacility),
                  new SqlParameter("@HotelId", null),
+                 new SqlParameter("@CheckIn", request.Details.CheckIn),
+                 new SqlParameter("@CheckOut", request.Details.CheckOut),
+                 new SqlParameter("@CityId", request.Details.cityId),
                  new SqlParameter("@PriceRangeFrom", request.Details.priceRangeFrom),
                  new SqlParameter("@PriceRangeTo", request.Details.priceRangeTo),
                  new SqlParameter("@RatingId", request.Details.ratingId),
@@ -526,7 +601,7 @@ namespace BookingTime.Controllers
                             stateName = row["StateName"] != DBNull.Value ? row["StateName"].ToString() : string.Empty,
                             rating = row["Rating"] != DBNull.Value ? row["Rating"].ToString() : string.Empty,
                             thumbnail = row["Thumbnail"] != DBNull.Value ? row["Thumbnail"].ToString() : string.Empty,
-                            featuredImages = row["FeaturedImages"] != DBNull.Value ? row["FeaturedImages"].ToString() : string.Empty,
+                            //featuredImages = row["FeaturedImages"] != DBNull.Value ? row["FeaturedImages"].ToString() : string.Empty,
                             totalReviews = row["TotalReviews"] != DBNull.Value ? Convert.ToInt32(row["TotalReviews"]) : 0,
                             amenities = _context.PropertyAmenities
                             .Where(pa => pa.PropertyDetailId == Convert.ToInt32(row["ID"]))

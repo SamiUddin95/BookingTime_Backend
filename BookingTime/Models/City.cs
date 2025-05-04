@@ -13,6 +13,8 @@ public partial class City
 
     public int? StateId { get; set; }
 
+    public virtual ICollection<BookingDetail> BookingDetails { get; } = new List<BookingDetail>();
+
     public virtual Country Country { get; set; } = null!;
 
     public virtual ICollection<PropertyDetail> PropertyDetails { get; } = new List<PropertyDetail>();

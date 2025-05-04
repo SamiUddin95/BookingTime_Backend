@@ -55,6 +55,8 @@ public partial class PropertyDetail
 
     public int? RatingId { get; set; }
 
+    public virtual ICollection<BookingDetail> BookingDetails { get; } = new List<BookingDetail>();
+
     public virtual City? City { get; set; }
 
     public virtual Country? Country { get; set; }
