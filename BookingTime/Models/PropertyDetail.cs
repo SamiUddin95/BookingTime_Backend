@@ -29,8 +29,6 @@ public partial class PropertyDetail
 
     public string? Longitude { get; set; }
 
-    public string? Amenities { get; set; }
-
     public string? LongDesc { get; set; }
 
     public string? TotalFloor { get; set; }
@@ -53,19 +51,19 @@ public partial class PropertyDetail
 
     public string? Thumbnail { get; set; }
 
-    public string? Images { get; set; }
-
     public int? AmenitiesId { get; set; }
 
     public int? RatingId { get; set; }
 
-    public DateTime? CreatedOn { get; set; }
+    public virtual ICollection<BookingDetail> BookingDetails { get; } = new List<BookingDetail>();
 
     public virtual City? City { get; set; }
 
     public virtual Country? Country { get; set; }
 
     public virtual HotelType? ListType { get; set; }
+
+    public virtual ICollection<PropertyRoom> PropertyRooms { get; } = new List<PropertyRoom>();
 
     public virtual Rating? Rating { get; set; }
 

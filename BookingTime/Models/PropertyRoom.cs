@@ -19,5 +19,7 @@ public partial class PropertyRoom
 
     public string Image { get; set; } = null!;
 
+    public virtual PropertyDetail Property { get; set; } = null!;
+
     public virtual ICollection<RoomImage> RoomImages { get; } = new List<RoomImage>();
 }
