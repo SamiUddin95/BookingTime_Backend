@@ -503,6 +503,10 @@ public partial class AppDbContext : DbContext
 
             entity.Property(e => e.CountryCode).HasMaxLength(10);
             entity.Property(e => e.CountryName).HasMaxLength(100);
+
+            entity.HasOne(d => d.Currency).WithMany(p => p.Countries)
+                .HasForeignKey(d => d.CurrencyId)
+                .HasConstraintName("FK_Country_Currency");
         });
 
         modelBuilder.Entity<Currency>(entity =>
@@ -510,7 +514,6 @@ public partial class AppDbContext : DbContext
             entity.ToTable("CURRENCY");
 
             entity.Property(e => e.Id).HasColumnName("ID");
-            entity.Property(e => e.CountryId).HasColumnName("COUNTRY_ID");
             entity.Property(e => e.Name)
                 .HasMaxLength(50)
                 .IsUnicode(false)

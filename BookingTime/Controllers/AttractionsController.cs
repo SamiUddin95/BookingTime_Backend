@@ -31,6 +31,8 @@ namespace BookingTime.Controllers
                 .Where(a => a.CityId == cityId)
                 .Include(a => a.AttractionImages)
                 .Include(a => a.City)
+                    .ThenInclude(c => c.Country)
+                        .ThenInclude(c => c.Currency)
                 .ToListAsync();
 
             var attractionDtos = new List<AttractionDTO>();
@@ -44,7 +46,7 @@ namespace BookingTime.Controllers
                     Title = attraction.Title,
                     ShortDescription = attraction.ShortDescription,
                     DetailedDescription = attraction.DetailedDescription,
-                    Price = attraction.Price,
+                    Price = $"{attraction.City.Country.Currency.Symbol} {attraction.Price}",
                     Rating = attraction.Rating,
                     CreatedAt = attraction.CreatedAt,
                     CityName = attraction.City.CityName,
@@ -72,6 +74,8 @@ namespace BookingTime.Controllers
                 .Where(a => a.Id == id)
                 .Include(a => a.AttractionImages)
                 .Include(a => a.City)
+                    .ThenInclude(c => c.Country)
+                        .ThenInclude(c => c.Currency)
                 .FirstOrDefaultAsync();
 
             if (attractionEntity == null)
@@ -84,7 +88,7 @@ namespace BookingTime.Controllers
                 Title = attractionEntity.Title,
                 ShortDescription = attractionEntity.ShortDescription,
                 DetailedDescription = attractionEntity.DetailedDescription,
-                Price = attractionEntity.Price,
+                Price = $"{attractionEntity.City.Country.Currency.Symbol} {attractionEntity.Price}",
                 Rating = attractionEntity.Rating,
                 CreatedAt = attractionEntity.CreatedAt,
                 CityName = attractionEntity.City.CityName,
@@ -143,6 +147,8 @@ namespace BookingTime.Controllers
         {
             var query = _context.Attractions
                 .Include(a => a.City)
+                    .ThenInclude(c => c.Country)
+                        .ThenInclude(c => c.Currency)
                 .Include(a => a.AttractionImages)
                 .Include(a => a.Category)
                 .AsQueryable();
@@ -166,7 +172,7 @@ namespace BookingTime.Controllers
                     Title = attraction.Title,
                     ShortDescription = attraction.ShortDescription,
                     DetailedDescription = attraction.DetailedDescription,
-                    Price = attraction.Price,
+                    Price = $"{attraction.City.Country.Currency.Symbol} {attraction.Price}",
                     Rating = attraction.Rating,
                     CreatedAt = attraction.CreatedAt,
                     CityName = attraction.City.CityName,
