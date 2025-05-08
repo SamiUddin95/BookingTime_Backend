@@ -39,6 +39,12 @@ namespace BookingTime.DTO.RequestModel
 
     }
 
+    public class roomImages
+    {
+        public IFormFile? image { get; set; }
+        public string? name{ get; set; }
+
+    }
     public class amenity
     {
         public int? amenitiesId { get; set; }
@@ -107,6 +113,7 @@ namespace BookingTime.DTO.RequestModel
         public IFormFile Image { get; set; }
         public List<RoomAccess> roomAccessibility { get; set; }
         public List<RoomFacility> roomFacilities { get; set; }
+        public List<roomImages> roomImages { get; set; }
     }
 
 }

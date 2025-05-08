@@ -321,6 +321,33 @@ namespace BookingTime.Controllers
                             await _context.SaveChangesAsync();
                         }
 
+                        if (room.roomImages != null && room.roomImages.Count > 0 && rooms.Id > 0)
+                        {
+                            var imageList = new List<RoomImage>();
+
+                            foreach (var item in room.roomImages)
+                            {
+                                if (item?.image != null && item.image.Length > 0)
+                                {
+                                    string savedPath = await SaveImageAsync(item.image, Path.Combine(property.ListName,"Rooms", rooms.Name));
+                                    if (!string.IsNullOrEmpty(savedPath))
+                                    {
+                                        imageList.Add(new RoomImage
+                                        {
+                                            RoomId = rooms.Id,
+                                            ImagePath = savedPath
+                                        });
+                                    }
+                                }
+                            }
+
+                            if (imageList.Count > 0)
+                            {
+                                await _context.RoomImages.AddRangeAsync(imageList);
+                                await _context.SaveChangesAsync();
+                            }
+                        }
+
                     }
 
 
