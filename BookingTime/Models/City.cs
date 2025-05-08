@@ -13,7 +13,9 @@ public partial class City
 
     public int? StateId { get; set; }
 
-    public virtual ICollection<BookingDetail> BookingDetails { get; } = new List<BookingDetail>();
+    public string? ImageUrl { get; set; }
+
+    public virtual ICollection<Attraction> Attractions { get; } = new List<Attraction>();
 
     public virtual ICollection<BookingDetail> BookingDetails { get; } = new List<BookingDetail>();
 

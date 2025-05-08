@@ -293,7 +293,6 @@ public partial class AppDbContext : DbContext
 
             entity.HasOne(d => d.Attraction).WithMany(p => p.AttractionImages)
                 .HasForeignKey(d => d.AttractionId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_AttractionImages_Attractions");
         });
 
