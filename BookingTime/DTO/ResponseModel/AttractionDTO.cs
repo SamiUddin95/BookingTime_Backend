@@ -10,7 +10,8 @@
         public decimal Price { get; set; }
         public double? Rating { get; set; }
         public DateTime? CreatedAt { get; set; }
-        public string? CityName { get; set; }    
-        public List<string>? ImageUrls { get; set; }  
+        public string? CityName { get; set; }
+        public List<string> Images { get; set; } = new List<string>();
+
     }
 }

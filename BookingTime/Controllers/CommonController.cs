@@ -35,6 +35,13 @@ namespace BookingTime.Controllers
 
         }
 
+        [HttpGet("/api/GetAllCityList")]
+        public async Task<IActionResult> GetAllCityListAsync()
+        {
+            var city = await _context.Cities.Select(x => new { x.CityId, x.CityName }).ToListAsync();
+            return Ok(city);
+        }
+
         [HttpGet("/api/GetStateByCountryId/{countryId}")]
         public async Task<IActionResult> GetStateByCountryIdListAsync(int countryId)
         {

@@ -27,6 +27,8 @@ public partial class AppDbContext : DbContext
 
     public virtual DbSet<BeachAccess> BeachAccesses { get; set; }
 
+    public virtual DbSet<BookingDetail> BookingDetails { get; set; }
+
     public virtual DbSet<CarBookingDetail> CarBookingDetails { get; set; }
 
     public virtual DbSet<CarBookingPassengerDetail> CarBookingPassengerDetails { get; set; }
@@ -303,6 +305,24 @@ public partial class AppDbContext : DbContext
                 .HasMaxLength(50)
                 .IsUnicode(false)
                 .HasColumnName("Beach_Access");
+        });
+
+        modelBuilder.Entity<BookingDetail>(entity =>
+        {
+            entity.ToTable("Booking_Details");
+
+            entity.Property(e => e.CheckIn).HasColumnType("datetime");
+            entity.Property(e => e.CheckOut).HasColumnType("datetime");
+            entity.Property(e => e.CityId).HasColumnName("City_Id");
+            entity.Property(e => e.PropertyDetailId).HasColumnName("PropertyDetail_Id");
+
+            entity.HasOne(d => d.City).WithMany(p => p.BookingDetails)
+                .HasForeignKey(d => d.CityId)
+                .HasConstraintName("FK_Booking_Details_City");
+
+            entity.HasOne(d => d.PropertyDetail).WithMany(p => p.BookingDetails)
+                .HasForeignKey(d => d.PropertyDetailId)
+                .HasConstraintName("FK_Booking_Details_Property_Detail");
         });
 
         modelBuilder.Entity<CarBookingDetail>(entity =>
