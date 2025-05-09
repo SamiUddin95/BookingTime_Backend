@@ -259,13 +259,13 @@ namespace BookingTime.Controllers
                 return string.Empty;
 
             string folderPath = _configuration["TaxiImagesPath"] + folder;
-            if (!Directory.Exists(folderPath))
-                Directory.CreateDirectory(folderPath);
+            if (!Directory.Exists(folderPath.Trim()))
+                Directory.CreateDirectory(folderPath.Trim());
 
-            string fileName = $"{Guid.NewGuid()}_{file.FileName}";
-            string filePath = Path.Combine(folderPath, fileName);
+            string fileName = $"{Guid.NewGuid()}_{file.FileName.Trim()}";
+            string filePath = Path.Combine(folderPath.Trim(), fileName.Trim());
 
-            using (var stream = new FileStream(filePath, FileMode.Create))
+            using (var stream = new FileStream(filePath.Trim(), FileMode.Create))
             {
                 await file.CopyToAsync(stream);
             }

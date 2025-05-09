@@ -103,7 +103,7 @@ namespace BookingTime.Controllers
                     CancellationOption = request.CancellationOption,
                     Charges = request.Charges,
                     RatingId = request.RatingId,
-                    Thumbnail = imagePath
+                    Thumbnail = imagePath.Trim()
                 };
 
                 _context.PropertyDetails.Add(property);
@@ -274,7 +274,7 @@ namespace BookingTime.Controllers
                             Price = room.price,
                             Discount = room.discount,
                             AdditionalInfoId = room.additionalInfoId,
-                            Image = await SaveImageAsync(room.Image, $@"{property.ListName}\Rooms")
+                            Image = await SaveImageAsync(room.Image, $@"{property.ListName.Trim()}\Rooms")
                         };
 
                         _context.PropertyRooms.Add(rooms);
@@ -329,7 +329,7 @@ namespace BookingTime.Controllers
                             {
                                 if (item?.image != null && item.image.Length > 0)
                                 {
-                                    string savedPath = await SaveImageAsync(item.image, Path.Combine(property.ListName,"Rooms", rooms.Name));
+                                    string savedPath = await SaveImageAsync(item.image, Path.Combine(property.ListName.Trim(), "Rooms", rooms.Name.Trim()));
                                     if (!string.IsNullOrEmpty(savedPath))
                                     {
                                         imageList.Add(new RoomImage
@@ -368,12 +368,12 @@ namespace BookingTime.Controllers
                 return string.Empty;
 
             string folderPath = _configuration["PropertyImagesPath"] + folder;
-            if (!Directory.Exists(folderPath))
+            if (!Directory.Exists(folderPath.Trim()))
             {
-                Directory.CreateDirectory(folderPath);
+                Directory.CreateDirectory(folderPath.Trim());
             }
-            string fileName = $"{Guid.NewGuid()}_{file.FileName}";
-            string filePath = Path.Combine(folderPath, fileName);
+            string fileName = $"{Guid.NewGuid()}_{file.FileName.Trim()}";
+            string filePath = Path.Combine(folderPath.Trim(), fileName.Trim());
 
             using (var stream = new FileStream(filePath, FileMode.Create))
             {
@@ -382,7 +382,7 @@ namespace BookingTime.Controllers
 
             string relativePath = filePath.Substring(filePath.IndexOf("assets", StringComparison.OrdinalIgnoreCase));
 
-            return relativePath.Replace("\\", "/");
+            return relativePath.Replace("\\", "/").Trim();
         }
 
         [HttpPost("/api/UpdateListingProperty")]
@@ -769,6 +769,186 @@ namespace BookingTime.Controllers
 
             }
         }
+
+
+        [HttpGet("/api/GetListingPropertyDetailById")]
+        [EnableCors("AllowAngularApp")]
+        public async Task<ActionResult<PropertyDetailsModelResponseModel>> GetListingPropertyDetailByIdAsync(int propertyId)
+        {
+            try
+            {
+                string? connectionString = _configuration.GetConnectionString("BookingTimeConnection");
+
+                var model = new PropertyDetailsModelResponseModel
+                {
+                    Thumbnail = new List<string>(),
+                    RoomImages = new List<string>(),
+                    Amenities = new List<string>(),
+                    Facilities = new List<string>(),
+
+                };
+
+                using (SqlConnection con = new SqlConnection(connectionString))
+                {
+                    using (SqlCommand cmd = new SqlCommand("sp_GetPropertyDetailsById", con))
+                    {
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        cmd.Parameters.AddWithValue("@PropertyId", propertyId);
+                        model.Rooms = new List<RoomDetailModel>();
+                        model.RoomFacilities = new List<RoomFacilityModel>();
+                        model.RoomAccessibility = new List<RoomAccessibilityModel>();
+                        model.RoomImageList = new List<RoomImageModel>();
+
+
+                        await con.OpenAsync();
+                        using (SqlDataReader reader = await cmd.ExecuteReaderAsync())
+                        {
+                            // 1st result: Basic Property Info
+                            if (reader.Read())
+                            {
+                                model.Id = reader["ID"] != DBNull.Value ? Convert.ToInt32(reader["ID"]) : 0;
+                                model.ShortDesc = reader["SHORT_DESC"]?.ToString();
+                                model.PolicyDesc = reader["POLICY_DESC"]?.ToString();
+                            }
+
+                            // 2nd result: Thumbnail and Room Images
+                            if (reader.NextResult())
+                            {
+                                while (reader.Read())
+                                {
+                                    var thumbnail = reader["THUMBNAIL"]?.ToString();
+                                    if (!string.IsNullOrEmpty(thumbnail))
+                                        model.Thumbnail.Add(thumbnail);
+
+                                    var roomImg = reader["IMAGE"]?.ToString();
+                                    if (!string.IsNullOrEmpty(roomImg))
+                                        model.Thumbnail.Add(roomImg);
+                                }
+                            }
+
+                            // 3rd result: Facilities
+                            if (reader.NextResult())
+                            {
+                                while (reader.Read())
+                                {
+                                    var facility = reader["Facilities"]?.ToString();
+                                    if (!string.IsNullOrEmpty(facility))
+                                        model.Facilities.Add(facility);
+                                }
+                            }
+
+                            // 4th result: Amenities
+                            if (reader.NextResult())
+                            {
+                                while (reader.Read())
+                                {
+                                    var amenity = reader["Amenities"]?.ToString();
+                                    if (!string.IsNullOrEmpty(amenity))
+                                        model.Amenities.Add(amenity);
+                                }
+                            }
+
+                            
+                            // 5th result: Room Details
+                            if (reader.NextResult())
+                            {
+                                try
+                                {
+                                    if (reader.HasRows)
+                                    {
+                                        while (reader.Read())
+                                        {
+                                            var roomDetail = new RoomDetailModel
+                                            {
+                                                Id = reader["ID"] != DBNull.Value ? Convert.ToInt32(reader["ID"]) : 0,
+                                                PropertyId = reader["PROPERTY_ID"] != DBNull.Value ? Convert.ToInt32(reader["PROPERTY_ID"]) : 0,
+                                                Name = reader["NAME"]?.ToString() ?? string.Empty,
+                                                Price = reader["PRICE"] != DBNull.Value ? Convert.ToDecimal(reader["PRICE"]) : 0,
+                                                Discount = reader["DISCOUNT"] != DBNull.Value ? Convert.ToDecimal(reader["DISCOUNT"]) : 0,
+                                                AdditionalInfoId = reader["ADDITIONAL_INFO_ID"] != DBNull.Value ? Convert.ToInt32(reader["ADDITIONAL_INFO_ID"]) : 0,
+                                                Image = reader["IMAGE"]?.ToString() ?? string.Empty
+                                            };
+
+                                            model.Rooms.Add(roomDetail);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        Console.WriteLine("No room details found.");
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    Console.WriteLine("Error reading room details: " + ex.Message);
+                                }
+                            }
+
+
+                            // 6th result: Room Facilities
+                            if (reader.NextResult())
+                            {
+                                while (reader.Read())
+                                {
+                                    var roomId = reader["ID"] != DBNull.Value ? Convert.ToInt32(reader["ID"]) : 0;
+                                    var rf = reader["Room_Facilities"]?.ToString();
+                                    if (!string.IsNullOrEmpty(rf))
+                                    {
+                                        model.RoomFacilities.Add(new RoomFacilityModel
+                                        {
+                                            RoomId = roomId,
+                                            Facility = rf
+                                        });
+                                    }
+                                }
+                            }
+
+                            // 7th result: Room Accessibility
+                            if (reader.NextResult())
+                            {
+                                while (reader.Read())
+                                {
+                                    var roomId = reader["ID"] != DBNull.Value ? Convert.ToInt32(reader["ID"]) : 0;
+                                    var ra = reader["Room_Accessibility"]?.ToString();
+                                    if (!string.IsNullOrEmpty(ra))
+                                    {
+                                        model.RoomAccessibility.Add(new RoomAccessibilityModel
+                                        {
+                                            RoomId = roomId,
+                                            Accessibility = ra
+                                        });
+                                    }
+                                }
+                            }
+
+
+                            if (reader.NextResult())
+                            {
+                                while (reader.Read())
+                                {
+                                    model.RoomImageList.Add(new RoomImageModel
+                                    {
+                                        Id = reader["ID"] != DBNull.Value ? Convert.ToInt32(reader["ID"]) : 0,
+                                        RoomId = reader["ROOM_ID"] != DBNull.Value ? Convert.ToInt32(reader["ROOM_ID"]) : 0,
+                                        ImageUrl = reader["IMAGE_PATH"]?.ToString() ?? ""
+                                    });
+                                }
+                            }
+                        }
+                    }
+                }
+
+                return Ok(model);
+            }
+            catch (ValidationException vx)
+            {
+                return BadRequest(new { message = vx.Message ?? "Validation Error" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.InnerException?.Message ?? ex.Message ?? "Internal Server Error" });
+            }
+        }
+
 
         [HttpGet("/api/GetFeaturedHotel")]
         [EnableCors("AllowAngularApp")]
