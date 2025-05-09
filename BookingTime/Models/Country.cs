@@ -11,7 +11,11 @@ public partial class Country
 
     public string CountryCode { get; set; } = null!;
 
+    public int? CurrencyId { get; set; }
+
     public virtual ICollection<City> Cities { get; } = new List<City>();
+
+    public virtual Currency? Currency { get; set; }
 
     public virtual ICollection<PropertyDetail> PropertyDetails { get; } = new List<PropertyDetail>();
 

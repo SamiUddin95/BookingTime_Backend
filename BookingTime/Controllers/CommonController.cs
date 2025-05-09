@@ -35,6 +35,13 @@ namespace BookingTime.Controllers
 
         }
 
+        [HttpGet("/api/GetAllCityList")]
+        public async Task<IActionResult> GetAllCityListAsync()
+        {
+            var city = await _context.Cities.Select(x => new { x.CityId, x.CityName }).ToListAsync();
+            return Ok(city);
+        }
+
         [HttpGet("/api/GetStateByCountryId/{countryId}")]
         public async Task<IActionResult> GetStateByCountryIdListAsync(int countryId)
         {
@@ -149,24 +156,28 @@ namespace BookingTime.Controllers
 
                 if (countryId == 0)
                 {
-                    var Currency = await _context.Currencies.Select(x => new
-                    {
-                        x.Id,
-                        x.Name,
-                        x.Symbol,
-                        x.CountryId
-                    }).ToListAsync();
+                    var Currency = await _context.Countries
+                        .Include(c => c.Currency)
+                        .Select(x => new
+                        {
+                            x.Currency.Id,
+                            x.Currency.Name,
+                            x.Currency.Symbol,
+                            x.CountryId
+                        }).ToListAsync();
                     return Ok(Currency);
                 }
                 else
                 {
-                    var Currency = await _context.Currencies.Where(x => x.CountryId == countryId).Select(x => new
-                    {
-                        x.Id,
-                        x.Name,
-                        x.Symbol,
-                        x.CountryId
-                    }).ToListAsync();
+                    var Currency = await _context.Countries.Where(x => x.CountryId == countryId)
+                        .Include(c => c.Currency)
+                        .Select(x => new
+                        {
+                            x.Currency.Id,
+                            x.Currency.Name,
+                            x.Currency.Symbol,
+                            x.CountryId
+                        }).ToListAsync();
                     return Ok(Currency);
                 }
 
