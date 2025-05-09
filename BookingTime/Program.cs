@@ -1,4 +1,5 @@
 using BookingTime.Models;
+using BookingTime.Service;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -25,6 +26,7 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddScoped<TokenService>();
 
 var app = builder.Build();
 
@@ -45,6 +47,8 @@ else
 }
 
 app.UseHttpsRedirection();
+
+
 
 // Apply CORS policy before Authorization
 app.UseCors("AllowAngularApp");  // Ensure the CORS policy is applied before Authorization

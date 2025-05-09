@@ -15,6 +15,7 @@ using BookingTime.DTO.RequestModel;
 using Microsoft.EntityFrameworkCore;
 using BookingTime.DTO.ResponseModel;
 using BookingTime.Service;
+using Microsoft.AspNetCore.Identity;
 
 namespace BookingTime.Controllers
 {
@@ -31,40 +32,27 @@ namespace BookingTime.Controllers
             _tokenService = tokenService;
         }
 
-        [HttpPost]
-        [Route("/api/login")]
-        public object Login([FromBody] LoginRequest form)
+
+        [HttpPost("/api/loginRequest")]
+        public async Task<IActionResult> Login([FromBody] LoginRequest form)
         {
-            try
+            if (string.IsNullOrEmpty(form.Email) || string.IsNullOrEmpty(form.Password))
             {
-                var connectionString = _configuration.GetConnectionString("BookingTimeConnection");
-
-                if (string.IsNullOrEmpty(form.Email) || string.IsNullOrEmpty(form.Password))
-                {
-                    return JsonConvert.SerializeObject(new { code = 200, msg = "Please enter credentials!" });
-                }
-                var emailChk = _context.Users.SingleOrDefault(u => u.Email == form.Email);
-                if (emailChk == null)
-                {
-                    return JsonConvert.SerializeObject(new { code = 200, msg = "Login details not found!" });
-                }
-                if ((bool)!emailChk.IsVerified)
-                {
-                    return JsonConvert.SerializeObject(new { code = 200, msg = "Please verify your account!" });
-                }
-                if (emailChk.Password != form.Password)
-                {
-                    return JsonConvert.SerializeObject(new { code = 200, msg = "Please enter the correct password!" });
-                }
-                var token = _tokenService.GenerateJwtToken(emailChk);
-
-                return JsonConvert.SerializeObject(new { code = 200, msg = "Logged in successfully!", data = token });
-            }
-            catch (Exception ex)
+                return BadRequest(new { code = 400, msg = "Please enter credentials!" });
+            } 
+            var user = await _context.Users.SingleOrDefaultAsync(u => u.Email == form.Email);
+            if (user == null)
             {
-                return JsonConvert.SerializeObject(new { code = 500, msg = "An error occurred while processing your request.", error = ex.Message });
+                return Ok(new { code = 401, msg = "Login details not found!" });
+            } 
+            if (user.IsVerified==false)
+            {
+                return Ok(new { code = 401, msg = "Please verify your account!" });
             }
+            var token = _tokenService.GenerateJwtToken(user); 
+            return Ok(new { code = 200, msg = "Logged in successfully!", data = token });
         }
+
 
         [HttpPost]
         [Route("/api/signUp")]
