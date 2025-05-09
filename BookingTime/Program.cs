@@ -10,19 +10,22 @@ builder.Services.AddControllers();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("BookingTimeConnection")));
 
+// Register Singleton services here
+builder.Services.AddSingleton<IFileLoaderService, FileLoaderService>();
+
 // Configure CORS to allow requests from your Angular app
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngularApp",
         policy => policy.WithOrigins(
-            //"http://45.59.163.15:4200",
-        "http://localhost:4200"
-        )  // Allow your frontend
-
-                        .AllowAnyHeader()
-                        .AllowAnyMethod()
-                        .AllowCredentials());  // Allow credentials (if needed)
+            "http://localhost:4200",
+            "http://45.59.163.15:4200" 
+        )
+        .AllowAnyHeader()
+        .AllowAnyMethod()
+        .AllowCredentials());
 });
+
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

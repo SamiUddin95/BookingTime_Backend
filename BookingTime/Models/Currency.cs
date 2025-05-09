@@ -11,5 +11,5 @@ public partial class Currency
 
     public string Symbol { get; set; } = null!;
 
-    public int CountryId { get; set; }
+    public virtual ICollection<Country> Countries { get; } = new List<Country>();
 }

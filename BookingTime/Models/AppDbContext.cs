@@ -27,6 +27,8 @@ public partial class AppDbContext : DbContext
 
     public virtual DbSet<BeachAccess> BeachAccesses { get; set; }
 
+    public virtual DbSet<BookingDetail> BookingDetails { get; set; }
+
     public virtual DbSet<CarBookingDetail> CarBookingDetails { get; set; }
 
     public virtual DbSet<CarBookingPassengerDetail> CarBookingPassengerDetails { get; set; }
@@ -291,7 +293,6 @@ public partial class AppDbContext : DbContext
 
             entity.HasOne(d => d.Attraction).WithMany(p => p.AttractionImages)
                 .HasForeignKey(d => d.AttractionId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_AttractionImages_Attractions");
         });
 
@@ -303,6 +304,24 @@ public partial class AppDbContext : DbContext
                 .HasMaxLength(50)
                 .IsUnicode(false)
                 .HasColumnName("Beach_Access");
+        });
+
+        modelBuilder.Entity<BookingDetail>(entity =>
+        {
+            entity.ToTable("Booking_Details");
+
+            entity.Property(e => e.CheckIn).HasColumnType("datetime");
+            entity.Property(e => e.CheckOut).HasColumnType("datetime");
+            entity.Property(e => e.CityId).HasColumnName("City_Id");
+            entity.Property(e => e.PropertyDetailId).HasColumnName("PropertyDetail_Id");
+
+            entity.HasOne(d => d.City).WithMany(p => p.BookingDetails)
+                .HasForeignKey(d => d.CityId)
+                .HasConstraintName("FK_Booking_Details_City");
+
+            entity.HasOne(d => d.PropertyDetail).WithMany(p => p.BookingDetails)
+                .HasForeignKey(d => d.PropertyDetailId)
+                .HasConstraintName("FK_Booking_Details_Property_Detail");
         });
 
         modelBuilder.Entity<CarBookingDetail>(entity =>
@@ -484,6 +503,10 @@ public partial class AppDbContext : DbContext
 
             entity.Property(e => e.CountryCode).HasMaxLength(10);
             entity.Property(e => e.CountryName).HasMaxLength(100);
+
+            entity.HasOne(d => d.Currency).WithMany(p => p.Countries)
+                .HasForeignKey(d => d.CurrencyId)
+                .HasConstraintName("FK_Country_Currency");
         });
 
         modelBuilder.Entity<Currency>(entity =>
@@ -491,7 +514,6 @@ public partial class AppDbContext : DbContext
             entity.ToTable("CURRENCY");
 
             entity.Property(e => e.Id).HasColumnName("ID");
-            entity.Property(e => e.CountryId).HasColumnName("COUNTRY_ID");
             entity.Property(e => e.Name)
                 .HasMaxLength(50)
                 .IsUnicode(false)

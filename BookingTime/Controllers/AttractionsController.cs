@@ -1,9 +1,11 @@
 ﻿using BookingTime.DTO.RequestModel;
 using BookingTime.DTO.ResponseModel;
 using BookingTime.Models;
+using BookingTime.Service;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 namespace BookingTime.Controllers
 {
@@ -12,9 +14,14 @@ namespace BookingTime.Controllers
     public class AttractionsController : ControllerBase
     {
         private readonly AppDbContext _context;
-        public AttractionsController(AppDbContext context)
+        private readonly IConfiguration _configuration;
+        private readonly IFileLoaderService _fileLoader;
+
+        public AttractionsController(AppDbContext context, IConfiguration configuration, IFileLoaderService fileLoaderService)
         {
             _context = context;
+            _configuration = configuration;
+            _fileLoader = fileLoaderService;
         }
 
         [HttpGet("by-city/{cityId}")]
@@ -24,50 +31,77 @@ namespace BookingTime.Controllers
                 .Where(a => a.CityId == cityId)
                 .Include(a => a.AttractionImages)
                 .Include(a => a.City)
-                .Select(a => new AttractionDTO
-                {
-                    Id = a.Id,
-                    CityId = a.CityId,
-                    Title = a.Title,
-                    ShortDescription = a.ShortDescription,
-                    DetailedDescription = a.DetailedDescription,
-                    Price = a.Price,
-                    Rating = a.Rating,
-                    CreatedAt = a.CreatedAt,
-                    CityName = a.City.CityName,
-                    ImageUrls = a.AttractionImages.Select(i => i.ImageUrl).ToList()
-                })
+                    .ThenInclude(c => c.Country)
+                        .ThenInclude(c => c.Currency)
                 .ToListAsync();
 
-            return Ok(attractions);
+            var attractionDtos = new List<AttractionDTO>();
+
+            foreach (var attraction in attractions)
+            {
+                var attractionDto = new AttractionDTO
+                {
+                    Id = attraction.Id,
+                    CityId = attraction.CityId,
+                    Title = attraction.Title,
+                    ShortDescription = attraction.ShortDescription,
+                    DetailedDescription = attraction.DetailedDescription,
+                    Price = $"{attraction.City.Country.Currency.Symbol} {attraction.Price}",
+                    Rating = attraction.Rating,
+                    CreatedAt = attraction.CreatedAt,
+                    CityName = attraction.City.CityName,
+                    Images = new List<string>()
+                };
+
+                foreach (var img in attraction.AttractionImages)
+                {
+                    var base64Image = await _fileLoader.LoadFileAsync(img.ImageUrl);
+                    if (base64Image != null)
+                        attractionDto.Images.Add(base64Image);
+                }
+
+                attractionDtos.Add(attractionDto);
+            }
+
+            return Ok(attractionDtos);
         }
+
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
-            var attraction = await _context.Attractions
+            var attractionEntity = await _context.Attractions
                 .Where(a => a.Id == id)
                 .Include(a => a.AttractionImages)
                 .Include(a => a.City)
-                .Select(a => new AttractionDTO
-                {
-                    Id = a.Id,
-                    CityId = a.CityId,
-                    Title = a.Title,
-                    ShortDescription = a.ShortDescription,
-                    DetailedDescription = a.DetailedDescription,
-                    Price = a.Price,
-                    Rating = a.Rating,
-                    CreatedAt = a.CreatedAt,
-                    CityName = a.City.CityName,
-                    ImageUrls = a.AttractionImages.Select(i => i.ImageUrl).ToList()
-                })
+                    .ThenInclude(c => c.Country)
+                        .ThenInclude(c => c.Currency)
                 .FirstOrDefaultAsync();
 
-            if (attraction == null)
+            if (attractionEntity == null)
                 return NotFound();
 
-            return Ok(attraction);
+            var attractionDto = new AttractionDTO
+            {
+                Id = attractionEntity.Id,
+                CityId = attractionEntity.CityId,
+                Title = attractionEntity.Title,
+                ShortDescription = attractionEntity.ShortDescription,
+                DetailedDescription = attractionEntity.DetailedDescription,
+                Price = $"{attractionEntity.City.Country.Currency.Symbol} {attractionEntity.Price}",
+                Rating = attractionEntity.Rating,
+                CreatedAt = attractionEntity.CreatedAt,
+                CityName = attractionEntity.City.CityName,
+            };
+
+            foreach (var img in attractionEntity.AttractionImages)
+            {
+                var base64Image = await _fileLoader.LoadFileAsync(img.ImageUrl);
+                if (base64Image != null)
+                    attractionDto.Images.Add(base64Image);
+            }
+
+            return Ok(attractionDto);
         }
 
 
@@ -113,6 +147,8 @@ namespace BookingTime.Controllers
         {
             var query = _context.Attractions
                 .Include(a => a.City)
+                    .ThenInclude(c => c.Country)
+                        .ThenInclude(c => c.Currency)
                 .Include(a => a.AttractionImages)
                 .Include(a => a.Category)
                 .AsQueryable();
@@ -123,24 +159,83 @@ namespace BookingTime.Controllers
             if (filter.CategoryIds != null && filter.CategoryIds.Any())
                 query = query.Where(a => a.CategoryId.HasValue && filter.CategoryIds.Contains(a.CategoryId.Value));
 
-            var attractions = await query
-                .Select(a => new AttractionDTO
-                {
-                    Id = a.Id,
-                    CityId = a.CityId,
-                    Title = a.Title,
-                    ShortDescription = a.ShortDescription,
-                    DetailedDescription = a.DetailedDescription,
-                    Price = a.Price,
-                    Rating = a.Rating,
-                    CreatedAt = a.CreatedAt,
-                    CityName = a.City.CityName,
-                    ImageUrls = a.AttractionImages.Select(i => i.ImageUrl).ToList()
-                })
-                .ToListAsync();
+            var attractions = await query.ToListAsync();
 
-            return Ok(attractions);
+            var attractionDtos = new List<AttractionDTO>();
+
+            foreach (var attraction in attractions)
+            {
+                var dto = new AttractionDTO
+                {
+                    Id = attraction.Id,
+                    CityId = attraction.CityId,
+                    Title = attraction.Title,
+                    ShortDescription = attraction.ShortDescription,
+                    DetailedDescription = attraction.DetailedDescription,
+                    Price = $"{attraction.City.Country.Currency.Symbol} {attraction.Price}",
+                    Rating = attraction.Rating,
+                    CreatedAt = attraction.CreatedAt,
+                    CityName = attraction.City.CityName,
+                    Images = new List<string>()
+                };
+
+                var base64Tasks = attraction.AttractionImages
+                    .Select(img => _fileLoader.LoadFileAsync(img.ImageUrl));
+
+                var base64Images = await Task.WhenAll(base64Tasks);
+
+                dto.Images.AddRange(base64Images.Where(img => img != null));
+
+                attractionDtos.Add(dto);
+            }
+
+
+            return Ok(attractionDtos);
         }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateAttraction([FromForm] CreateAttractionDTO dto)
+        {
+            var attraction = new Attraction
+            {
+                CityId = dto.CityId,
+                Title = dto.Title,
+                ShortDescription = dto.ShortDescription,
+                DetailedDescription = dto.DetailedDescription,
+                Price = dto.Price,
+                Rating = dto.Rating,
+                CategoryId = dto.CategoryId,
+                CreatedAt = DateTime.UtcNow,
+            };
+
+            string rootPath = _configuration["AttractionImagesPath"];
+            Directory.CreateDirectory(rootPath);
+
+            foreach (var image in dto.Images)
+            {
+                if (image.Length > 0)
+                {
+                    var fileName = $"{Guid.NewGuid()}{Path.GetExtension(image.FileName)}";
+                    var fullPath = Path.Combine(rootPath, fileName);
+
+                    using (var stream = new FileStream(fullPath, FileMode.Create))
+                    {
+                        await image.CopyToAsync(stream);
+                    }
+
+                    attraction.AttractionImages.Add(new AttractionImage
+                    {
+                        ImageUrl = fullPath 
+                    });
+                }
+            }
+
+            _context.Attractions.Add(attraction);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction(nameof(GetById), new { id = attraction.Id }, new { attraction.Id });
+        }
+
 
 
     }
