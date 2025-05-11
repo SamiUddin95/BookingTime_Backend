@@ -9,7 +9,7 @@ public partial class CarDetail
 
     public int CountyId { get; set; }
 
-    public int CityId { get; set; }
+    public long? CityId { get; set; }
 
     public int StateId { get; set; }
 
@@ -60,6 +60,12 @@ public partial class CarDetail
     public string Features { get; set; } = null!;
 
     public string? Photos { get; set; }
+
+    public decimal? RentPerDay { get; set; }
+
+    public virtual ICollection<CarBooking> CarBookings { get; } = new List<CarBooking>();
+
+    public virtual City? City { get; set; }
 
     public virtual FuelType? FuelType { get; set; }
 

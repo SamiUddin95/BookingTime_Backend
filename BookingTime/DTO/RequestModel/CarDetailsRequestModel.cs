@@ -2,7 +2,7 @@
 {
     public class CarDetailsRequestModel
     {
-        public CarDetail Details { get; set; }
+        //public CarDetail Details { get; set; }
         public PaginationInfo PaginationInfo { get; set; }
             public class CarDetail
             {

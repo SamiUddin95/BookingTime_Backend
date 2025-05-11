@@ -29,9 +29,13 @@ public partial class AppDbContext : DbContext
 
     public virtual DbSet<BookingDetail> BookingDetails { get; set; }
 
+    public virtual DbSet<CarBooking> CarBookings { get; set; }
+
     public virtual DbSet<CarBookingDetail> CarBookingDetails { get; set; }
 
     public virtual DbSet<CarBookingPassengerDetail> CarBookingPassengerDetails { get; set; }
+
+    public virtual DbSet<CarCategory> CarCategories { get; set; }
 
     public virtual DbSet<CarDetail> CarDetails { get; set; }
 
@@ -324,6 +328,34 @@ public partial class AppDbContext : DbContext
                 .HasConstraintName("FK_Booking_Details_Property_Detail");
         });
 
+        modelBuilder.Entity<CarBooking>(entity =>
+        {
+            entity.HasKey(e => e.BookingId).HasName("PK__CarBooki__73951AED59CC0FDA");
+
+            entity.Property(e => e.BookingStatus).HasMaxLength(50);
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.DropoffDate).HasColumnType("datetime");
+            entity.Property(e => e.DropoffLocation).HasMaxLength(255);
+            entity.Property(e => e.PickupDate).HasColumnType("datetime");
+            entity.Property(e => e.PickupLocation).HasMaxLength(255);
+            entity.Property(e => e.TotalPrice).HasColumnType("decimal(10, 2)");
+            entity.Property(e => e.UpdatedAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+
+            entity.HasOne(d => d.Car).WithMany(p => p.CarBookings)
+                .HasForeignKey(d => d.CarId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_CarBookings_Cars");
+
+            entity.HasOne(d => d.User).WithMany(p => p.CarBookings)
+                .HasForeignKey(d => d.UserId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_CarBookings_Users");
+        });
+
         modelBuilder.Entity<CarBookingDetail>(entity =>
         {
             entity.ToTable("CAR_BOOKING_DETAILS");
@@ -383,6 +415,14 @@ public partial class AppDbContext : DbContext
                 .HasColumnName("PHONE_NUMBER");
         });
 
+        modelBuilder.Entity<CarCategory>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__CarCateg__3214EC07F7557C05");
+
+            entity.Property(e => e.Icon).HasMaxLength(100);
+            entity.Property(e => e.Name).HasMaxLength(100);
+        });
+
         modelBuilder.Entity<CarDetail>(entity =>
         {
             entity.ToTable("CAR_DETAILS");
@@ -418,6 +458,7 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.OdometerId).HasColumnName("Odometer_Id");
             entity.Property(e => e.PassengerCapacity).HasColumnName("Passenger_Capacity");
             entity.Property(e => e.Photos).IsUnicode(false);
+            entity.Property(e => e.RentPerDay).HasColumnType("decimal(10, 2)");
             entity.Property(e => e.SeatbeltTypeId).HasColumnName("Seatbelt_type_Id");
             entity.Property(e => e.StartDate)
                 .HasColumnType("date")
@@ -437,6 +478,11 @@ public partial class AppDbContext : DbContext
                 .HasColumnName("Vehicle_Value");
             entity.Property(e => e.Vin).HasColumnName("VIN");
             entity.Property(e => e.YearId).HasColumnName("Year_Id");
+
+            entity.HasOne(d => d.City).WithMany(p => p.CarDetails)
+                .HasForeignKey(d => d.CityId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("fk_city_id");
 
             entity.HasOne(d => d.FuelType).WithMany(p => p.CarDetails)
                 .HasForeignKey(d => d.FuelTypeId)

@@ -1,4 +1,5 @@
 using BookingTime.Models;
+using BookingTime.DTO;
 using BookingTime.Service;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,6 +9,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("BookingTimeConnection")));
+
+builder.Services.AddDbContext<QueryContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("BookingTimeConnection")));
 
 // Register Singleton services here

@@ -19,6 +19,8 @@ public partial class City
 
     public virtual ICollection<BookingDetail> BookingDetails { get; } = new List<BookingDetail>();
 
+    public virtual ICollection<CarDetail> CarDetails { get; } = new List<CarDetail>();
+
     public virtual Country Country { get; set; } = null!;
 
     public virtual ICollection<PropertyDetail> PropertyDetails { get; } = new List<PropertyDetail>();
