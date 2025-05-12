@@ -7,6 +7,7 @@ namespace BookingTime.DTO.ResponseModel
         public long Id { get; set; }
         public string Name { get; set; }
         public int? PassengerCapacity { get; set; }
+        public int? CategoryId { get; set; }
         public int? Days { get; set; }
         public decimal? TotalRent { get; set; }
         public int? MileageLimit { get; set; }

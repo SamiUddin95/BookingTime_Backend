@@ -419,7 +419,7 @@ public partial class AppDbContext : DbContext
         {
             entity.HasKey(e => e.Id).HasName("PK__CarCateg__3214EC07F7557C05");
 
-            entity.Property(e => e.Icon).HasMaxLength(100);
+            entity.Property(e => e.Icon).IsUnicode(false);
             entity.Property(e => e.Name).HasMaxLength(100);
         });
 
@@ -478,6 +478,10 @@ public partial class AppDbContext : DbContext
                 .HasColumnName("Vehicle_Value");
             entity.Property(e => e.Vin).HasColumnName("VIN");
             entity.Property(e => e.YearId).HasColumnName("Year_Id");
+
+            entity.HasOne(d => d.Category).WithMany(p => p.CarDetails)
+                .HasForeignKey(d => d.CategoryId)
+                .HasConstraintName("FK_CAR_CATEGORY");
 
             entity.HasOne(d => d.City).WithMany(p => p.CarDetails)
                 .HasForeignKey(d => d.CityId)

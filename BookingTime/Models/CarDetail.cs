@@ -63,7 +63,11 @@ public partial class CarDetail
 
     public decimal? RentPerDay { get; set; }
 
+    public int? CategoryId { get; set; }
+
     public virtual ICollection<CarBooking> CarBookings { get; } = new List<CarBooking>();
+
+    public virtual CarCategory? Category { get; set; }
 
     public virtual City? City { get; set; }
 

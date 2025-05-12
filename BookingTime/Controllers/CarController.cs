@@ -465,7 +465,21 @@ namespace BookingTime.Controllers
                     }
                 }
 
-                return Ok(availableCars);
+                var categoryIds = availableCars
+                    .Select(c => c.CategoryId)
+                    .Distinct()
+                    .ToList();
+
+                var categories = await _context.CarCategories
+                    .Where(cat => categoryIds.Contains(cat.Id))
+                    .ToListAsync();
+
+                return Ok(new
+                {
+                    Categories = categories,
+                    Cars = availableCars
+                });
+
             }
             catch (Exception e)
             {

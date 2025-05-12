@@ -10,4 +10,6 @@ public partial class CarCategory
     public string Name { get; set; } = null!;
 
     public string? Icon { get; set; }
+
+    public virtual ICollection<CarDetail> CarDetails { get; } = new List<CarDetail>();
 }
