@@ -8,6 +8,8 @@ namespace BookingTime.DTO.ResponseModel
         public string Name { get; set; }
         public int? PassengerCapacity { get; set; }
         public int? CategoryId { get; set; }
+        public int? MakeId { get; set; }
+        public int? OdometerId { get; set; }
         public int? Days { get; set; }
         public decimal? TotalRent { get; set; }
         public int? MileageLimit { get; set; }

@@ -16,6 +16,7 @@ builder.Services.AddDbContext<QueryContext>(options =>
 
 // Register Singleton services here
 builder.Services.AddSingleton<IFileLoaderService, FileLoaderService>();
+builder.Services.AddScoped<ICarRentalService, CarRentalService>();
 
 // Configure CORS to allow requests from your Angular app
 builder.Services.AddCors(options =>
