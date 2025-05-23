@@ -152,6 +152,9 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.AvailabilityStatus)
                 .HasMaxLength(50)
                 .HasColumnName("AVAILABILITY_STATUS");
+            entity.Property(e => e.CompanyName)
+    .HasMaxLength(50)
+    .HasColumnName("COMPANY_NAME");
             entity.Property(e => e.BasePrice)
                 .HasColumnType("decimal(18, 2)")
                 .HasColumnName("BASE_PRICE");
