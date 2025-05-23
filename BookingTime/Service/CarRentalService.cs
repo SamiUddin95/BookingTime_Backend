@@ -36,7 +36,11 @@ namespace BookingTime.Service {
                 .ToListAsync();
 
             foreach(var car in availableCars) {
-                if(!string.IsNullOrEmpty(car.CarImage))
+
+                car.StartDate = pickupDate;
+                car.EndDate = dropoffDate;
+
+                if (!string.IsNullOrEmpty(car.CarImage))
                     car.CarImageBase64 = await _loaderService.LoadFileAsync(car.CarImage);
             }
 
