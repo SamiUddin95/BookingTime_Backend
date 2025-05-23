@@ -16,10 +16,14 @@
         public decimal Discount { get; set; }
         public int CurrencyId { get; set; }
         public string CityName { get; set; }
+        public int CityId { get; set; }
         public string CountryName { get; set; }
         public string StateName { get; set; }
         public string Reviews { get; set; }
         public string Thumbnail { get; set; }
+        public string Currency { get; set; }
+        public string CurrencySymbol { get; set; }
+        public string Rating { get; set; }
         public List<amenity1> amenity { get; set; }
     }
 

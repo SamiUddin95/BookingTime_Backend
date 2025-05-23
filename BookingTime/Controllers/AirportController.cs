@@ -79,6 +79,7 @@ namespace BookingTime.Controllers
 
                 var detail = new AirportTaxi
                 {
+                    CompanyName = request.companyName,
                     OperatingAirport = request.operatingAirport,
                     CountryId = request.countryId,
                     CityId = request.cityId,
@@ -210,13 +211,15 @@ namespace BookingTime.Controllers
                                 country = row["CountryName"]?.ToString(),
                                 city = row["CityName"]?.ToString(),
                                 state = row["StateName"]?.ToString(),
+                                companyName = row["companyName"]?.ToString(),
                                 operatingAirport = row["operatingAirport"]?.ToString(),
                                 bookingPerDay = Convert.ToInt32(row["bookingPerDay"]),
                                 fleetSizeName = row["fleetSizeName"]?.ToString(),
                                 website = row["website"]?.ToString(),
                                 capacity = Convert.ToInt32(row["capacity"]),
                                 basePrice = Convert.ToDecimal(row["BasePrice"]),
-                                currency = row["currency"]?.ToString(),
+                                currency = row["Currency"]?.ToString(),
+                                symbol = row["CurrencySymbol"]?.ToString(),
                                 availabilityStatus = row["availabilityStatus"]?.ToString(),
                                 imageUrl = row["imageUrl"]?.ToString(),
                                 firstName = row["firstName"]?.ToString(),
