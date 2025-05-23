@@ -4,19 +4,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BookingTime.Models;
 
-public partial class BookingtimeContext : DbContext
+public partial class AppDbContext : DbContext
 {
-    public BookingtimeContext()
-    {
-    }
-
-    private readonly IConfiguration _configuration;
-    public BookingtimeContext(IConfiguration configuration)
-    {
-        _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
-    }
-    // Constructor that takes DbContextOptions
-    public BookingtimeContext(DbContextOptions<BookingtimeContext> options)
+    public AppDbContext(DbContextOptions<AppDbContext> options)
         : base(options)
     {
     }
@@ -29,9 +19,23 @@ public partial class BookingtimeContext : DbContext
 
     public virtual DbSet<Amenity> Amenities { get; set; }
 
+    public virtual DbSet<Attraction> Attractions { get; set; }
+
+    public virtual DbSet<AttractionCategory> AttractionCategories { get; set; }
+
+    public virtual DbSet<AttractionImage> AttractionImages { get; set; }
+
+    public virtual DbSet<BeachAccess> BeachAccesses { get; set; }
+
+    public virtual DbSet<BookingDetail> BookingDetails { get; set; }
+
+    public virtual DbSet<CarBooking> CarBookings { get; set; }
+
     public virtual DbSet<CarBookingDetail> CarBookingDetails { get; set; }
 
     public virtual DbSet<CarBookingPassengerDetail> CarBookingPassengerDetails { get; set; }
+
+    public virtual DbSet<CarCategory> CarCategories { get; set; }
 
     public virtual DbSet<CarDetail> CarDetails { get; set; }
 
@@ -43,21 +47,67 @@ public partial class BookingtimeContext : DbContext
 
     public virtual DbSet<Currency> Currencies { get; set; }
 
+    public virtual DbSet<EntirePlace> EntirePlaces { get; set; }
+
+    public virtual DbSet<Facility> Facilities { get; set; }
+
     public virtual DbSet<FuelType> FuelTypes { get; set; }
+
+    public virtual DbSet<FunThingsToDo> FunThingsToDos { get; set; }
+
+    public virtual DbSet<Group> Groups { get; set; }
+
+    public virtual DbSet<GroupPermission> GroupPermissions { get; set; }
+
+    public virtual DbSet<GroupUser> GroupUsers { get; set; }
 
     public virtual DbSet<HotelType> HotelTypes { get; set; }
 
     public virtual DbSet<OdometerReading> OdometerReadings { get; set; }
 
+    public virtual DbSet<PopularFilter> PopularFilters { get; set; }
+
+    public virtual DbSet<PropertyAccessibility> PropertyAccessibilities { get; set; }
+
     public virtual DbSet<PropertyAmenity> PropertyAmenities { get; set; }
+
+    public virtual DbSet<PropertyBeachAccess> PropertyBeachAccesses { get; set; }
 
     public virtual DbSet<PropertyDetail> PropertyDetails { get; set; }
 
+    public virtual DbSet<PropertyEntirePlace> PropertyEntirePlaces { get; set; }
+
+    public virtual DbSet<PropertyFacility> PropertyFacilities { get; set; }
+
+    public virtual DbSet<PropertyFunThingsToDo> PropertyFunThingsToDos { get; set; }
+
+    public virtual DbSet<PropertyPropertyAccessibility> PropertyPropertyAccessibilities { get; set; }
+
+    public virtual DbSet<PropertyPropertyFilter> PropertyPropertyFilters { get; set; }
+
+    public virtual DbSet<PropertyPropertyRating> PropertyPropertyRatings { get; set; }
+
+    public virtual DbSet<PropertyPropertyType> PropertyPropertyTypes { get; set; }
+
+    public virtual DbSet<PropertyRating> PropertyRatings { get; set; }
+
     public virtual DbSet<PropertyReview> PropertyReviews { get; set; }
+
+    public virtual DbSet<PropertyReviewScore> PropertyReviewScores { get; set; }
 
     public virtual DbSet<PropertyRoom> PropertyRooms { get; set; }
 
+    public virtual DbSet<PropertyRoomAccessibility> PropertyRoomAccessibilities { get; set; }
+
+    public virtual DbSet<PropertyRoomFacility> PropertyRoomFacilities { get; set; }
+
+    public virtual DbSet<PropertyType> PropertyTypes { get; set; }
+
     public virtual DbSet<Rating> Ratings { get; set; }
+
+    public virtual DbSet<RoomAccessibility> RoomAccessibilities { get; set; }
+
+    public virtual DbSet<RoomFacility> RoomFacilities { get; set; }
 
     public virtual DbSet<RoomImage> RoomImages { get; set; }
 
@@ -77,9 +127,7 @@ public partial class BookingtimeContext : DbContext
 
     public virtual DbSet<VehicleYear> VehicleYears { get; set; }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Server=DESKTOP-HEDM8AQ;Database=BOOKINGTIME;Trusted_Connection=True;TrustServerCertificate=True;");
+    public virtual DbSet<VwTopDestinationsByAttraction> VwTopDestinationsByAttractions { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -104,6 +152,9 @@ public partial class BookingtimeContext : DbContext
             entity.Property(e => e.AvailabilityStatus)
                 .HasMaxLength(50)
                 .HasColumnName("AVAILABILITY_STATUS");
+            entity.Property(e => e.CompanyName)
+    .HasMaxLength(50)
+    .HasColumnName("COMPANY_NAME");
             entity.Property(e => e.BasePrice)
                 .HasColumnType("decimal(18, 2)")
                 .HasColumnName("BASE_PRICE");
@@ -213,6 +264,101 @@ public partial class BookingtimeContext : DbContext
                 .IsUnicode(false);
         });
 
+        modelBuilder.Entity<Attraction>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__Attracti__3214EC079574BA04");
+
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.Price).HasColumnType("decimal(10, 2)");
+            entity.Property(e => e.ShortDescription).HasMaxLength(500);
+            entity.Property(e => e.Title).HasMaxLength(200);
+
+            entity.HasOne(d => d.Category).WithMany(p => p.Attractions)
+                .HasForeignKey(d => d.CategoryId)
+                .HasConstraintName("FK_Attractions_Categories");
+
+            entity.HasOne(d => d.City).WithMany(p => p.Attractions)
+                .HasForeignKey(d => d.CityId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Attractions_City");
+        });
+
+        modelBuilder.Entity<AttractionCategory>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__Attracti__3214EC070CB57295");
+
+            entity.Property(e => e.Name).HasMaxLength(100);
+        });
+
+        modelBuilder.Entity<AttractionImage>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__Attracti__3214EC0702D921E5");
+
+            entity.Property(e => e.IsPrimary).HasDefaultValueSql("((0))");
+
+            entity.HasOne(d => d.Attraction).WithMany(p => p.AttractionImages)
+                .HasForeignKey(d => d.AttractionId)
+                .HasConstraintName("FK_AttractionImages_Attractions");
+        });
+
+        modelBuilder.Entity<BeachAccess>(entity =>
+        {
+            entity.ToTable("Beach_Accesses");
+
+            entity.Property(e => e.BeachAccess1)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("Beach_Access");
+        });
+
+        modelBuilder.Entity<BookingDetail>(entity =>
+        {
+            entity.ToTable("Booking_Details");
+
+            entity.Property(e => e.CheckIn).HasColumnType("datetime");
+            entity.Property(e => e.CheckOut).HasColumnType("datetime");
+            entity.Property(e => e.CityId).HasColumnName("City_Id");
+            entity.Property(e => e.PropertyDetailId).HasColumnName("PropertyDetail_Id");
+
+            entity.HasOne(d => d.City).WithMany(p => p.BookingDetails)
+                .HasForeignKey(d => d.CityId)
+                .HasConstraintName("FK_Booking_Details_City");
+
+            entity.HasOne(d => d.PropertyDetail).WithMany(p => p.BookingDetails)
+                .HasForeignKey(d => d.PropertyDetailId)
+                .HasConstraintName("FK_Booking_Details_Property_Detail");
+        });
+
+        modelBuilder.Entity<CarBooking>(entity =>
+        {
+            entity.HasKey(e => e.BookingId).HasName("PK__CarBooki__73951AED59CC0FDA");
+
+            entity.Property(e => e.BookingStatus).HasMaxLength(50);
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.DropoffDate).HasColumnType("datetime");
+            entity.Property(e => e.DropoffLocation).HasMaxLength(255);
+            entity.Property(e => e.PickupDate).HasColumnType("datetime");
+            entity.Property(e => e.PickupLocation).HasMaxLength(255);
+            entity.Property(e => e.TotalPrice).HasColumnType("decimal(10, 2)");
+            entity.Property(e => e.UpdatedAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+
+            entity.HasOne(d => d.Car).WithMany(p => p.CarBookings)
+                .HasForeignKey(d => d.CarId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_CarBookings_Cars");
+
+            entity.HasOne(d => d.User).WithMany(p => p.CarBookings)
+                .HasForeignKey(d => d.UserId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_CarBookings_Users");
+        });
+
         modelBuilder.Entity<CarBookingDetail>(entity =>
         {
             entity.ToTable("CAR_BOOKING_DETAILS");
@@ -272,6 +418,14 @@ public partial class BookingtimeContext : DbContext
                 .HasColumnName("PHONE_NUMBER");
         });
 
+        modelBuilder.Entity<CarCategory>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__CarCateg__3214EC07F7557C05");
+
+            entity.Property(e => e.Icon).IsUnicode(false);
+            entity.Property(e => e.Name).HasMaxLength(100);
+        });
+
         modelBuilder.Entity<CarDetail>(entity =>
         {
             entity.ToTable("CAR_DETAILS");
@@ -307,6 +461,7 @@ public partial class BookingtimeContext : DbContext
             entity.Property(e => e.OdometerId).HasColumnName("Odometer_Id");
             entity.Property(e => e.PassengerCapacity).HasColumnName("Passenger_Capacity");
             entity.Property(e => e.Photos).IsUnicode(false);
+            entity.Property(e => e.RentPerDay).HasColumnType("decimal(10, 2)");
             entity.Property(e => e.SeatbeltTypeId).HasColumnName("Seatbelt_type_Id");
             entity.Property(e => e.StartDate)
                 .HasColumnType("date")
@@ -327,9 +482,17 @@ public partial class BookingtimeContext : DbContext
             entity.Property(e => e.Vin).HasColumnName("VIN");
             entity.Property(e => e.YearId).HasColumnName("Year_Id");
 
+            entity.HasOne(d => d.Category).WithMany(p => p.CarDetails)
+                .HasForeignKey(d => d.CategoryId)
+                .HasConstraintName("FK_CAR_CATEGORY");
+
+            entity.HasOne(d => d.City).WithMany(p => p.CarDetails)
+                .HasForeignKey(d => d.CityId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("fk_city_id");
+
             entity.HasOne(d => d.FuelType).WithMany(p => p.CarDetails)
                 .HasForeignKey(d => d.FuelTypeId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_CAR_DETAILS_Fuel_Type");
 
             entity.HasOne(d => d.Make).WithMany(p => p.CarDetails)
@@ -367,11 +530,6 @@ public partial class BookingtimeContext : DbContext
                 .HasMaxLength(250)
                 .IsUnicode(false)
                 .HasColumnName("IMAGE_PATH");
-
-            entity.HasOne(d => d.Car).WithMany(p => p.CarImages)
-                .HasForeignKey(d => d.CarId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_CAR_IMAGES_CAR_DETAILS");
         });
 
         modelBuilder.Entity<City>(entity =>
@@ -381,10 +539,11 @@ public partial class BookingtimeContext : DbContext
             entity.ToTable("City");
 
             entity.Property(e => e.CityName).HasMaxLength(100);
+            entity.Property(e => e.ImageUrl).HasMaxLength(50);
 
             entity.HasOne(d => d.Country).WithMany(p => p.Cities)
                 .HasForeignKey(d => d.CountryId)
-                .HasConstraintName("FK__City__CountryId__693CA210");
+                .HasConstraintName("FK__City__CountryId__76619304");
         });
 
         modelBuilder.Entity<Country>(entity =>
@@ -397,6 +556,10 @@ public partial class BookingtimeContext : DbContext
 
             entity.Property(e => e.CountryCode).HasMaxLength(10);
             entity.Property(e => e.CountryName).HasMaxLength(100);
+
+            entity.HasOne(d => d.Currency).WithMany(p => p.Countries)
+                .HasForeignKey(d => d.CurrencyId)
+                .HasConstraintName("FK_Country_Currency");
         });
 
         modelBuilder.Entity<Currency>(entity =>
@@ -404,7 +567,6 @@ public partial class BookingtimeContext : DbContext
             entity.ToTable("CURRENCY");
 
             entity.Property(e => e.Id).HasColumnName("ID");
-            entity.Property(e => e.CountryId).HasColumnName("COUNTRY_ID");
             entity.Property(e => e.Name)
                 .HasMaxLength(50)
                 .IsUnicode(false)
@@ -413,6 +575,23 @@ public partial class BookingtimeContext : DbContext
                 .HasMaxLength(50)
                 .IsUnicode(false)
                 .HasColumnName("SYMBOL");
+        });
+
+        modelBuilder.Entity<EntirePlace>(entity =>
+        {
+            entity.ToTable("Entire_Places");
+
+            entity.Property(e => e.EntirePlaces)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("Entire_Places");
+        });
+
+        modelBuilder.Entity<Facility>(entity =>
+        {
+            entity.Property(e => e.Facilities)
+                .HasMaxLength(50)
+                .IsUnicode(false);
         });
 
         modelBuilder.Entity<FuelType>(entity =>
@@ -425,6 +604,53 @@ public partial class BookingtimeContext : DbContext
                 .HasColumnName("Fuel_Type");
         });
 
+        modelBuilder.Entity<FunThingsToDo>(entity =>
+        {
+            entity.ToTable("FunThings_ToDo");
+
+            entity.Property(e => e.FunThings)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("Fun_Things");
+        });
+
+        modelBuilder.Entity<Group>(entity =>
+        {
+            entity.HasKey(e => e.GroupId).HasName("PK_GROUP");
+
+            entity.ToTable("GROUPS");
+
+            entity.Property(e => e.GroupId)
+                .ValueGeneratedNever()
+                .HasColumnName("GROUP_ID");
+            entity.Property(e => e.Name)
+                .HasMaxLength(100)
+                .IsUnicode(false)
+                .HasColumnName("NAME");
+        });
+
+        modelBuilder.Entity<GroupPermission>(entity =>
+        {
+            entity.ToTable("GROUP_PERMISSION");
+
+            entity.Property(e => e.Id).HasColumnName("ID");
+            entity.Property(e => e.GroupId).HasColumnName("GROUP_ID");
+            entity.Property(e => e.PermissionId).HasColumnName("PERMISSION_ID");
+        });
+
+        modelBuilder.Entity<GroupUser>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToTable("GROUP_USER");
+
+            entity.Property(e => e.GroupId).HasColumnName("GROUP_ID");
+            entity.Property(e => e.UserId)
+                .HasMaxLength(10)
+                .IsUnicode(false)
+                .HasColumnName("USER_ID");
+        });
+
         modelBuilder.Entity<HotelType>(entity =>
         {
             entity.HasKey(e => e.ListTypeId).HasName("PK__HotelTyp__5268C8CAE61B7CBA");
@@ -432,6 +658,8 @@ public partial class BookingtimeContext : DbContext
             entity.ToTable("HotelType");
 
             entity.HasIndex(e => e.HotelType1, "UQ__HotelTyp__F638B67254815968").IsUnique();
+
+            entity.HasIndex(e => e.HotelType1, "UQ__HotelTyp__F638B672B6F89D12").IsUnique();
 
             entity.Property(e => e.Description).HasMaxLength(255);
             entity.Property(e => e.HotelType1)
@@ -448,6 +676,26 @@ public partial class BookingtimeContext : DbContext
                 .HasColumnName("Odometer_Reading");
         });
 
+        modelBuilder.Entity<PopularFilter>(entity =>
+        {
+            entity.ToTable("Popular_Filters");
+
+            entity.Property(e => e.PopularFilters)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("Popular_Filters");
+        });
+
+        modelBuilder.Entity<PropertyAccessibility>(entity =>
+        {
+            entity.ToTable("Property_Accessibility");
+
+            entity.Property(e => e.PropertyAccessibility1)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("Property_Accessibility");
+        });
+
         modelBuilder.Entity<PropertyAmenity>(entity =>
         {
             entity.ToTable("Property_Amenities");
@@ -456,11 +704,22 @@ public partial class BookingtimeContext : DbContext
             entity.Property(e => e.PropertyDetailId).HasColumnName("Property_Detail_Id");
         });
 
+        modelBuilder.Entity<PropertyBeachAccess>(entity =>
+        {
+            entity.ToTable("Property_BeachAccess");
+
+            entity.Property(e => e.BeachAccessId).HasColumnName("Beach_Access_Id");
+            entity.Property(e => e.PropertyDetailId).HasColumnName("Property_Detail_Id");
+        });
+
         modelBuilder.Entity<PropertyDetail>(entity =>
         {
             entity.ToTable("PROPERTY_DETAILS");
 
             entity.Property(e => e.Id).HasColumnName("ID");
+            entity.Property(e => e.Amenities)
+                .HasMaxLength(200)
+                .HasColumnName("AMENITIES");
             entity.Property(e => e.AmenitiesId).HasColumnName("Amenities_Id");
             entity.Property(e => e.BasePrice)
                 .HasColumnType("decimal(18, 2)")
@@ -473,10 +732,16 @@ public partial class BookingtimeContext : DbContext
                 .HasColumnName("CHARGES");
             entity.Property(e => e.CityId).HasColumnName("CITY_ID");
             entity.Property(e => e.CountryId).HasColumnName("COUNTRY_ID");
+            entity.Property(e => e.CreatedOn)
+                .HasColumnType("datetime")
+                .HasColumnName("CREATED_ON");
             entity.Property(e => e.CurrencyId).HasColumnName("CURRENCY_ID");
             entity.Property(e => e.Discount)
                 .HasColumnType("decimal(18, 2)")
                 .HasColumnName("DISCOUNT");
+            entity.Property(e => e.Images)
+                .IsUnicode(false)
+                .HasColumnName("IMAGES");
             entity.Property(e => e.Latitude)
                 .HasMaxLength(100)
                 .HasColumnName("LATITUDE");
@@ -510,7 +775,7 @@ public partial class BookingtimeContext : DbContext
                 .HasColumnName("TOTAL_ROOM");
             entity.Property(e => e.UsageType)
                 .HasMaxLength(50)
-                .IsUnicode(false)
+                .IsFixedLength()
                 .HasColumnName("USAGE_TYPE");
 
             entity.HasOne(d => d.City).WithMany(p => p.PropertyDetails)
@@ -535,6 +800,73 @@ public partial class BookingtimeContext : DbContext
                 .HasConstraintName("FK_PROPERTY_State");
         });
 
+        modelBuilder.Entity<PropertyEntirePlace>(entity =>
+        {
+            entity.ToTable("Property_EntirePlace");
+
+            entity.Property(e => e.EntirePlaceId).HasColumnName("Entire_Place_Id");
+            entity.Property(e => e.PropertyDetailId).HasColumnName("Property_Detail_Id");
+        });
+
+        modelBuilder.Entity<PropertyFacility>(entity =>
+        {
+            entity.ToTable("Property_Facilities");
+
+            entity.Property(e => e.FacilityId).HasColumnName("Facility_Id");
+            entity.Property(e => e.PropertyDetailId).HasColumnName("Property_Detail_Id");
+        });
+
+        modelBuilder.Entity<PropertyFunThingsToDo>(entity =>
+        {
+            entity.ToTable("Property_FunThingsToDo");
+
+            entity.Property(e => e.FunThingsId).HasColumnName("FunThings_Id");
+            entity.Property(e => e.PropertyDetailId).HasColumnName("Property_Detail_Id");
+        });
+
+        modelBuilder.Entity<PropertyPropertyAccessibility>(entity =>
+        {
+            entity.ToTable("Property_PropertyAccessibility");
+
+            entity.Property(e => e.PropertyAccessibilityId).HasColumnName("PropertyAccessibility_Id");
+            entity.Property(e => e.PropertyDetailId).HasColumnName("Property_Detail_Id");
+        });
+
+        modelBuilder.Entity<PropertyPropertyFilter>(entity =>
+        {
+            entity.ToTable("Property_PropertyFilters");
+
+            entity.Property(e => e.PopularFilterId).HasColumnName("PopularFilter_Id");
+            entity.Property(e => e.PropertyDetailId).HasColumnName("Property_Detail_Id");
+        });
+
+        modelBuilder.Entity<PropertyPropertyRating>(entity =>
+        {
+            entity.ToTable("Property_PropertyRating");
+
+            entity.Property(e => e.PropertyDetailId).HasColumnName("Property_Detail_Id");
+            entity.Property(e => e.PropertyRatingId).HasColumnName("Property_Rating_Id");
+        });
+
+        modelBuilder.Entity<PropertyPropertyType>(entity =>
+        {
+            entity.ToTable("Property_PropertyType");
+
+            entity.Property(e => e.PropertyDetailId).HasColumnName("Property_Detail_Id");
+            entity.Property(e => e.PropertyTypeId).HasColumnName("Property_Type_Id");
+        });
+
+        modelBuilder.Entity<PropertyRating>(entity =>
+        {
+            entity.ToTable("Property_Rating");
+
+            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.PropertyRating1)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("Property_Rating");
+        });
+
         modelBuilder.Entity<PropertyReview>(entity =>
         {
             entity.ToTable("PROPERTY_REVIEWS");
@@ -553,6 +885,14 @@ public partial class BookingtimeContext : DbContext
                 .HasColumnType("datetime")
                 .HasColumnName("UPDATED_ON");
             entity.Property(e => e.UserId).HasColumnName("USER_ID");
+        });
+
+        modelBuilder.Entity<PropertyReviewScore>(entity =>
+        {
+            entity.ToTable("Property_Review_Score");
+
+            entity.Property(e => e.PropertyDetailId).HasColumnName("Property_Detail_Id");
+            entity.Property(e => e.ReviewScoreId).HasColumnName("Review_Score_Id");
         });
 
         modelBuilder.Entity<PropertyRoom>(entity =>
@@ -575,11 +915,32 @@ public partial class BookingtimeContext : DbContext
                 .HasColumnType("decimal(10, 3)")
                 .HasColumnName("PRICE");
             entity.Property(e => e.PropertyId).HasColumnName("PROPERTY_ID");
+        });
 
-            entity.HasOne(d => d.Property).WithMany(p => p.PropertyRooms)
-                .HasForeignKey(d => d.PropertyId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_PROPERTY_ROOMS_PROPERTY");
+        modelBuilder.Entity<PropertyRoomAccessibility>(entity =>
+        {
+            entity.ToTable("Property_RoomAccessibility");
+
+            entity.Property(e => e.RoomAccessibilityId).HasColumnName("RoomAccessibility_Id");
+            entity.Property(e => e.RoomId).HasColumnName("Room_Id");
+        });
+
+        modelBuilder.Entity<PropertyRoomFacility>(entity =>
+        {
+            entity.ToTable("Property_RoomFacility");
+
+            entity.Property(e => e.RoomFacilityId).HasColumnName("Room_Facility_Id");
+            entity.Property(e => e.RoomId).HasColumnName("Room_Id");
+        });
+
+        modelBuilder.Entity<PropertyType>(entity =>
+        {
+            entity.ToTable("Property_Type");
+
+            entity.Property(e => e.PropertyType1)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("Property_Type");
         });
 
         modelBuilder.Entity<Rating>(entity =>
@@ -587,6 +948,28 @@ public partial class BookingtimeContext : DbContext
             entity.Property(e => e.Ratings)
                 .HasMaxLength(10)
                 .IsUnicode(false);
+        });
+
+        modelBuilder.Entity<RoomAccessibility>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK_Room_Accessibiity");
+
+            entity.ToTable("Room_Accessibility");
+
+            entity.Property(e => e.RoomAccessibility1)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("Room_Accessibility");
+        });
+
+        modelBuilder.Entity<RoomFacility>(entity =>
+        {
+            entity.ToTable("Room_Facility");
+
+            entity.Property(e => e.RoomFacilities)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("Room_Facilities");
         });
 
         modelBuilder.Entity<RoomImage>(entity =>
@@ -709,6 +1092,16 @@ public partial class BookingtimeContext : DbContext
             entity.ToTable("Vehicle_Year");
 
             entity.Property(e => e.VehicleYear1).HasColumnName("Vehicle_Year");
+        });
+
+        modelBuilder.Entity<VwTopDestinationsByAttraction>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("Vw_TopDestinationsByAttractions");
+
+            entity.Property(e => e.CityName).HasMaxLength(100);
+            entity.Property(e => e.ImageUrl).HasMaxLength(50);
         });
 
         OnModelCreatingPartial(modelBuilder);

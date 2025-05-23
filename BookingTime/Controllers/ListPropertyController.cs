@@ -26,16 +26,18 @@ namespace BookingTime.Controllers
     public class ListPropertyController : Controller
     {
         private readonly IConfiguration _configuration;
-        public ListPropertyController(IConfiguration configuration)
+        private readonly AppDbContext _context;
+        public ListPropertyController(IConfiguration configuration, AppDbContext context)
         {
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+            _context = context;
         }
 
         /*        [HttpGet("/api/GetListOFProperty")]
                 [EnableCors("AllowAngularApp")]
                 public object GetListOFProperty()
                 {
-                    BookingtimeContext bTMContext = new BookingtimeContext(_configuration);
+                    AppDbContext bTMContext = new AppDbContext(_configuration);
                     var listOfProperty = bTMContext.PropertyDetails.ToList();
                     return listOfProperty;
                 }
@@ -49,7 +51,7 @@ namespace BookingTime.Controllers
                     var propertyDetail = System.Text.Json.JsonSerializer.Deserialize<PropertyDetail>(data.GetRawText());
                     if (propertyDetail == null)
                         return BadRequest("Failed to parse property details.");
-                    BookingtimeContext bTMContext = new BookingtimeContext(_configuration);
+                    AppDbContext bTMContext = new AppDbContext(_configuration);
                     bTMContext.PropertyDetails.Add(propertyDetail);
                     bTMContext.SaveChanges();
                     return Ok(new { code = 200, msg = "Property added successfully!" });
@@ -61,7 +63,6 @@ namespace BookingTime.Controllers
         {
             try
             {
-                BookingtimeContext _context = new BookingtimeContext(_configuration);
 
                 var existingProperty = await _context.PropertyDetails
            .Where(p => p.ListName == request.ListName &&
@@ -102,7 +103,7 @@ namespace BookingTime.Controllers
                     CancellationOption = request.CancellationOption,
                     Charges = request.Charges,
                     RatingId = request.RatingId,
-                    Thumbnail = imagePath
+                    Thumbnail = imagePath.Trim()
                 };
 
                 _context.PropertyDetails.Add(property);
@@ -128,25 +129,228 @@ namespace BookingTime.Controllers
                     await _context.SaveChangesAsync();
                 }
 
+                if (request.BeachAccess != null && request.BeachAccess.Count > 0)
+                {
+                    var list = new List<PropertyBeachAccess>();
+
+                    foreach (var item in request.BeachAccess)
+                    {
+                        if (item.id.HasValue)
+                        {
+                            list.Add(new PropertyBeachAccess
+                            {
+                                PropertyDetailId = property.Id,
+                                BeachAccessId = item.id.Value
+                            });
+                        }
+                    }
+
+                    _context.PropertyBeachAccesses.AddRange(list);
+                    await _context.SaveChangesAsync();
+                }
+
+                if (request.EntirePlaces != null && request.EntirePlaces.Count > 0)
+                {
+                    var list = new List<PropertyEntirePlace>();
+                    foreach (var item in request.EntirePlaces)
+                    {
+                        if (item.id.HasValue)
+                        {
+                            list.Add(new PropertyEntirePlace
+                            {
+                                PropertyDetailId = property.Id,
+                                EntirePlaceId = item.id.Value
+                            });
+                        }
+                    }
+                    _context.PropertyEntirePlaces.AddRange(list);
+                    await _context.SaveChangesAsync();
+                }
+
+                if (request.Facilities != null && request.Facilities.Count > 0)
+                {
+                    var list = new List<PropertyFacility>();
+                    foreach (var item in request.Facilities)
+                    {
+                        if (item.id.HasValue)
+                        {
+                            list.Add(new PropertyFacility
+                            {
+                                PropertyDetailId = property.Id,
+                                FacilityId = item.id.Value
+                            });
+                        }
+                    }
+                    _context.PropertyFacilities.AddRange(list);
+                    await _context.SaveChangesAsync();
+                }
+
+                if (request.FunThingsToDo != null && request.FunThingsToDo.Count > 0)
+                {
+                    var list = new List<PropertyFunThingsToDo>();
+
+                    foreach (var item in request.FunThingsToDo)
+                    {
+                        if (item.id.HasValue)
+                        {
+                            list.Add(new PropertyFunThingsToDo
+                            {
+                                PropertyDetailId = property.Id,
+                                FunThingsId = item.id.Value
+                            });
+                        }
+                    }
+
+                    _context.PropertyFunThingsToDos.AddRange(list);
+                    await _context.SaveChangesAsync();
+                }
+
+                if (request.PopularFilter != null && request.PopularFilter.Count > 0)
+                {
+                    var list = new List<PropertyPropertyFilter>();
+
+                    foreach (var item in request.FunThingsToDo)
+                    {
+                        if (item.id.HasValue)
+                        {
+                            list.Add(new PropertyPropertyFilter
+                            {
+                                PropertyDetailId = property.Id,
+                                PopularFilterId = item.id.Value
+                            });
+                        }
+                    }
+
+                    _context.PropertyPropertyFilters.AddRange(list);
+                    await _context.SaveChangesAsync();
+                }
+
+                if (request.PropertyType != null && request.PropertyType.Count > 0)
+                {
+                    var list = new List<PropertyPropertyType>();
+                    foreach (var item in request.PropertyType)
+                    {
+                        if (item.id.HasValue)
+                        {
+                            list.Add(new PropertyPropertyType
+                            {
+                                PropertyDetailId = property.Id,
+                                PropertyTypeId = item.id.Value
+                            });
+                        }
+                    }
+                    _context.PropertyPropertyTypes.AddRange(list);
+                    await _context.SaveChangesAsync();
+                }
+
+                if (request.PropertyAccessibility != null && request.PropertyAccessibility.Count > 0)
+                {
+                    var list = new List<PropertyPropertyAccessibility>();
+                    foreach (var item in request.PropertyAccessibility)
+                    {
+                        if (item.id.HasValue)
+                        {
+                            list.Add(new PropertyPropertyAccessibility
+                            {
+                                PropertyDetailId = property.Id,
+                                PropertyAccessibilityId = item.id.Value
+                            });
+                        }
+                    }
+                    _context.PropertyPropertyAccessibilities.AddRange(list);
+                    await _context.SaveChangesAsync();
+                }
+
                 if (request.rooms != null && request.rooms.Count > 0)
                 {
-                    var rooms = new List<PropertyRoom>();
+                    //                    var rooms = new List<PropertyRoom>();
 
                     foreach (var room in request.rooms)
                     {
-                        rooms.Add(new PropertyRoom
+                        var rooms = new PropertyRoom
                         {
                             PropertyId = property.Id,
                             Name = room.name,
                             Price = room.price,
                             Discount = room.discount,
                             AdditionalInfoId = room.additionalInfoId,
-                            Image = await SaveImageAsync(room.Image, $@"{property.ListName}\Rooms")
-                        });
+                            Image = await SaveImageAsync(room.Image, $@"{property.ListName.Trim()}\Rooms")
+                        };
+
+                        _context.PropertyRooms.Add(rooms);
+                        await _context.SaveChangesAsync();
+
+
+                        if (room.roomAccessibility != null && room.roomAccessibility.Count > 0 && rooms.Id > 0)
+                        {
+                            var Accesslist = new List<PropertyRoomAccessibility>();
+
+                            foreach (var item in room.roomAccessibility)
+                            {
+                                if (item.id.HasValue)
+                                {
+                                    Accesslist.Add(new PropertyRoomAccessibility
+                                    {
+                                        RoomId = rooms.Id,
+                                        RoomAccessibilityId = item.id.Value
+                                    });
+                                }
+                            }
+
+                            _context.PropertyRoomAccessibilities.AddRange(Accesslist);
+                            await _context.SaveChangesAsync();
+                        }
+
+                        if (room.roomFacilities != null && room.roomFacilities.Count > 0 && rooms.Id > 0)
+                        {
+                            var faclitylist = new List<PropertyRoomFacility>();
+
+                            foreach (var item in room.roomFacilities)
+                            {
+                                if (item.id.HasValue)
+                                {
+                                    faclitylist.Add(new PropertyRoomFacility
+                                    {
+                                        RoomId = rooms.Id,
+                                        RoomFacilityId = item.id.Value
+                                    });
+                                }
+                            }
+
+                            _context.PropertyRoomFacilities.AddRange(faclitylist);
+                            await _context.SaveChangesAsync();
+                        }
+
+                        if (room.roomImages != null && room.roomImages.Count > 0 && rooms.Id > 0)
+                        {
+                            var imageList = new List<RoomImage>();
+
+                            foreach (var item in room.roomImages)
+                            {
+                                if (item?.image != null && item.image.Length > 0)
+                                {
+                                    string savedPath = await SaveImageAsync(item.image, Path.Combine(property.ListName.Trim(), "Rooms", rooms.Name.Trim()));
+                                    if (!string.IsNullOrEmpty(savedPath))
+                                    {
+                                        imageList.Add(new RoomImage
+                                        {
+                                            RoomId = rooms.Id,
+                                            ImagePath = savedPath
+                                        });
+                                    }
+                                }
+                            }
+
+                            if (imageList.Count > 0)
+                            {
+                                await _context.RoomImages.AddRangeAsync(imageList);
+                                await _context.SaveChangesAsync();
+                            }
+                        }
+
                     }
 
-                    _context.PropertyRooms.AddRange(rooms);
-                    await _context.SaveChangesAsync();
+
                 }
 
 
@@ -164,12 +368,12 @@ namespace BookingTime.Controllers
                 return string.Empty;
 
             string folderPath = _configuration["PropertyImagesPath"] + folder;
-            if (!Directory.Exists(folderPath))
+            if (!Directory.Exists(folderPath.Trim()))
             {
-                Directory.CreateDirectory(folderPath);
+                Directory.CreateDirectory(folderPath.Trim());
             }
-            string fileName = $"{Guid.NewGuid()}_{file.FileName}";
-            string filePath = Path.Combine(folderPath, fileName);
+            string fileName = $"{Guid.NewGuid()}_{file.FileName.Trim()}";
+            string filePath = Path.Combine(folderPath.Trim(), fileName.Trim());
 
             using (var stream = new FileStream(filePath, FileMode.Create))
             {
@@ -178,7 +382,7 @@ namespace BookingTime.Controllers
 
             string relativePath = filePath.Substring(filePath.IndexOf("assets", StringComparison.OrdinalIgnoreCase));
 
-            return relativePath.Replace("\\", "/");
+            return relativePath.Replace("\\", "/").Trim();
         }
 
         [HttpPost("/api/UpdateListingProperty")]
@@ -187,7 +391,6 @@ namespace BookingTime.Controllers
         {
             try
             {
-                BookingtimeContext _context = new BookingtimeContext(_configuration);
 
                 var property = await _context.PropertyDetails.FirstOrDefaultAsync(p => p.Id == request.PropertyId);
 
@@ -280,9 +483,17 @@ namespace BookingTime.Controllers
         {
             try
             {
-                BookingtimeContext _context = new BookingtimeContext(_configuration);
                 string amenities = null;
                 string hotelTypes = null;
+                string beach = null;
+                string entirePlaces = null;
+                string facilities = null;
+                string funthing = null;
+                string popular = null;
+                string propertyType = null;
+                string propertyAccess = null;
+                string roomAccess = null;
+                string roomFacility = null;
 
                 string? ConnectionString = _configuration.GetConnectionString("BookingTimeConnection");
                 List<PropertiesListResponseModel> propertylist = new List<PropertiesListResponseModel>();
@@ -304,6 +515,60 @@ namespace BookingTime.Controllers
                    ? string.Join(",", request.Details.hotelTypes.Select(h => h.hotelTypeId))
                    : null;
                 }
+                if (request.Details.BeachAccess != null)
+                {
+                    beach = request.Details.BeachAccess != null && request.Details.BeachAccess.Any()
+                   ? string.Join(",", request.Details.BeachAccess.Select(h => h.Id))
+                   : null;
+                }
+                if (request.Details.EntirePlaces != null)
+                {
+                    entirePlaces = request.Details.EntirePlaces != null && request.Details.EntirePlaces.Any()
+                   ? string.Join(",", request.Details.EntirePlaces.Select(h => h.Id))
+                   : null;
+                }
+                if (request.Details.Facilities != null)
+                {
+                    facilities = request.Details.Facilities != null && request.Details.Facilities.Any()
+                   ? string.Join(",", request.Details.Facilities.Select(h => h.Id))
+                   : null;
+                }
+                if (request.Details.FunThingsToDo != null)
+                {
+                    funthing = request.Details.FunThingsToDo != null && request.Details.FunThingsToDo.Any()
+                   ? string.Join(",", request.Details.FunThingsToDo.Select(h => h.Id))
+                   : null;
+                }
+                if (request.Details.PropertyType != null)
+                {
+                    propertyType = request.Details.PropertyType != null && request.Details.PropertyType.Any()
+                   ? string.Join(",", request.Details.PropertyType.Select(h => h.Id))
+                   : null;
+                }
+                if (request.Details.PopularFilter != null)
+                {
+                    popular = request.Details.PopularFilter != null && request.Details.PopularFilter.Any()
+                   ? string.Join(",", request.Details.PopularFilter.Select(h => h.Id))
+                   : null;
+                }
+                if (request.Details.PropertyAccessibility != null)
+                {
+                    propertyAccess = request.Details.PropertyAccessibility != null && request.Details.PropertyAccessibility.Any()
+                   ? string.Join(",", request.Details.PropertyAccessibility.Select(h => h.Id))
+                   : null;
+                }
+                if (request.Details.RoomAccessibility != null)
+                {
+                    roomAccess = request.Details.RoomAccessibility != null && request.Details.RoomAccessibility.Any()
+                   ? string.Join(",", request.Details.RoomAccessibility.Select(h => h.Id))
+                   : null;
+                }
+                if (request.Details.RoomFacilities != null)
+                {
+                    roomFacility = request.Details.RoomFacilities != null && request.Details.RoomFacilities.Any()
+                   ? string.Join(",", request.Details.RoomFacilities.Select(h => h.Id))
+                   : null;
+                }
 
                 using (SqlCommand cmd = con.CreateCommand())
                 {
@@ -314,7 +579,19 @@ namespace BookingTime.Controllers
                     cmd.Parameters.AddRange(new[]
                  {
                  new SqlParameter("@HotelTypeId", hotelTypes),
+                 new SqlParameter("@BeachesId", beach),
+                 new SqlParameter("@EntirePlacesId", entirePlaces),
+                 new SqlParameter("@FacilitiesId", facilities),
+                 new SqlParameter("@FunThingsId", funthing),
+                 new SqlParameter("@PopularFilterId", popular),
+                 new SqlParameter("@PropertyTypeId", propertyType),
+                 new SqlParameter("@PropertyAccessibilityId", propertyAccess),
+                 new SqlParameter("@RoomAccessibilityId", roomAccess),
+                 new SqlParameter("@RoomFacilitiesId", roomFacility),
                  new SqlParameter("@HotelId", null),
+                 new SqlParameter("@CheckIn", request.Details.CheckIn),
+                 new SqlParameter("@CheckOut", request.Details.CheckOut),
+                 new SqlParameter("@CityId", request.Details.cityId),
                  new SqlParameter("@PriceRangeFrom", request.Details.priceRangeFrom),
                  new SqlParameter("@PriceRangeTo", request.Details.priceRangeTo),
                  new SqlParameter("@RatingId", request.Details.ratingId),
@@ -351,7 +628,7 @@ namespace BookingTime.Controllers
                             stateName = row["StateName"] != DBNull.Value ? row["StateName"].ToString() : string.Empty,
                             rating = row["Rating"] != DBNull.Value ? row["Rating"].ToString() : string.Empty,
                             thumbnail = row["Thumbnail"] != DBNull.Value ? row["Thumbnail"].ToString() : string.Empty,
-                            featuredImages = row["FeaturedImages"] != DBNull.Value ? row["FeaturedImages"].ToString() : string.Empty,
+                            //featuredImages = row["FeaturedImages"] != DBNull.Value ? row["FeaturedImages"].ToString() : string.Empty,
                             totalReviews = row["TotalReviews"] != DBNull.Value ? Convert.ToInt32(row["TotalReviews"]) : 0,
                             amenities = _context.PropertyAmenities
                             .Where(pa => pa.PropertyDetailId == Convert.ToInt32(row["ID"]))
@@ -406,7 +683,6 @@ namespace BookingTime.Controllers
 
             try
             {
-                BookingtimeContext _context = new BookingtimeContext(_configuration);
 
                 string? ConnectionString = _configuration.GetConnectionString("BookingTimeConnection");
                 PropertiesListResponseModel propertylist = new PropertiesListResponseModel();
@@ -494,6 +770,186 @@ namespace BookingTime.Controllers
             }
         }
 
+
+        [HttpGet("/api/GetListingPropertyDetailById")]
+        [EnableCors("AllowAngularApp")]
+        public async Task<ActionResult<PropertyDetailsModelResponseModel>> GetListingPropertyDetailByIdAsync(int propertyId)
+        {
+            try
+            {
+                string? connectionString = _configuration.GetConnectionString("BookingTimeConnection");
+
+                var model = new PropertyDetailsModelResponseModel
+                {
+                    Thumbnail = new List<string>(),
+                    RoomImages = new List<string>(),
+                    Amenities = new List<string>(),
+                    Facilities = new List<string>(),
+
+                };
+
+                using (SqlConnection con = new SqlConnection(connectionString))
+                {
+                    using (SqlCommand cmd = new SqlCommand("sp_GetPropertyDetailsById", con))
+                    {
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        cmd.Parameters.AddWithValue("@PropertyId", propertyId);
+                        model.Rooms = new List<RoomDetailModel>();
+                        model.RoomFacilities = new List<RoomFacilityModel>();
+                        model.RoomAccessibility = new List<RoomAccessibilityModel>();
+                        model.RoomImageList = new List<RoomImageModel>();
+
+
+                        await con.OpenAsync();
+                        using (SqlDataReader reader = await cmd.ExecuteReaderAsync())
+                        {
+                            // 1st result: Basic Property Info
+                            if (reader.Read())
+                            {
+                                model.Id = reader["ID"] != DBNull.Value ? Convert.ToInt32(reader["ID"]) : 0;
+                                model.ShortDesc = reader["SHORT_DESC"]?.ToString();
+                                model.PolicyDesc = reader["POLICY_DESC"]?.ToString();
+                            }
+
+                            // 2nd result: Thumbnail and Room Images
+                            if (reader.NextResult())
+                            {
+                                while (reader.Read())
+                                {
+                                    var thumbnail = reader["THUMBNAIL"]?.ToString();
+                                    if (!string.IsNullOrEmpty(thumbnail))
+                                        model.Thumbnail.Add(thumbnail);
+
+                                    var roomImg = reader["IMAGE"]?.ToString();
+                                    if (!string.IsNullOrEmpty(roomImg))
+                                        model.Thumbnail.Add(roomImg);
+                                }
+                            }
+
+                            // 3rd result: Facilities
+                            if (reader.NextResult())
+                            {
+                                while (reader.Read())
+                                {
+                                    var facility = reader["Facilities"]?.ToString();
+                                    if (!string.IsNullOrEmpty(facility))
+                                        model.Facilities.Add(facility);
+                                }
+                            }
+
+                            // 4th result: Amenities
+                            if (reader.NextResult())
+                            {
+                                while (reader.Read())
+                                {
+                                    var amenity = reader["Amenities"]?.ToString();
+                                    if (!string.IsNullOrEmpty(amenity))
+                                        model.Amenities.Add(amenity);
+                                }
+                            }
+
+                            
+                            // 5th result: Room Details
+                            if (reader.NextResult())
+                            {
+                                try
+                                {
+                                    if (reader.HasRows)
+                                    {
+                                        while (reader.Read())
+                                        {
+                                            var roomDetail = new RoomDetailModel
+                                            {
+                                                Id = reader["ID"] != DBNull.Value ? Convert.ToInt32(reader["ID"]) : 0,
+                                                PropertyId = reader["PROPERTY_ID"] != DBNull.Value ? Convert.ToInt32(reader["PROPERTY_ID"]) : 0,
+                                                Name = reader["NAME"]?.ToString() ?? string.Empty,
+                                                Price = reader["PRICE"] != DBNull.Value ? Convert.ToDecimal(reader["PRICE"]) : 0,
+                                                Discount = reader["DISCOUNT"] != DBNull.Value ? Convert.ToDecimal(reader["DISCOUNT"]) : 0,
+                                                AdditionalInfoId = reader["ADDITIONAL_INFO_ID"] != DBNull.Value ? Convert.ToInt32(reader["ADDITIONAL_INFO_ID"]) : 0,
+                                                Image = reader["IMAGE"]?.ToString() ?? string.Empty
+                                            };
+
+                                            model.Rooms.Add(roomDetail);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        Console.WriteLine("No room details found.");
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    Console.WriteLine("Error reading room details: " + ex.Message);
+                                }
+                            }
+
+
+                            // 6th result: Room Facilities
+                            if (reader.NextResult())
+                            {
+                                while (reader.Read())
+                                {
+                                    var roomId = reader["ID"] != DBNull.Value ? Convert.ToInt32(reader["ID"]) : 0;
+                                    var rf = reader["Room_Facilities"]?.ToString();
+                                    if (!string.IsNullOrEmpty(rf))
+                                    {
+                                        model.RoomFacilities.Add(new RoomFacilityModel
+                                        {
+                                            RoomId = roomId,
+                                            Facility = rf
+                                        });
+                                    }
+                                }
+                            }
+
+                            // 7th result: Room Accessibility
+                            if (reader.NextResult())
+                            {
+                                while (reader.Read())
+                                {
+                                    var roomId = reader["ID"] != DBNull.Value ? Convert.ToInt32(reader["ID"]) : 0;
+                                    var ra = reader["Room_Accessibility"]?.ToString();
+                                    if (!string.IsNullOrEmpty(ra))
+                                    {
+                                        model.RoomAccessibility.Add(new RoomAccessibilityModel
+                                        {
+                                            RoomId = roomId,
+                                            Accessibility = ra
+                                        });
+                                    }
+                                }
+                            }
+
+
+                            if (reader.NextResult())
+                            {
+                                while (reader.Read())
+                                {
+                                    model.RoomImageList.Add(new RoomImageModel
+                                    {
+                                        Id = reader["ID"] != DBNull.Value ? Convert.ToInt32(reader["ID"]) : 0,
+                                        RoomId = reader["ROOM_ID"] != DBNull.Value ? Convert.ToInt32(reader["ROOM_ID"]) : 0,
+                                        ImageUrl = reader["IMAGE_PATH"]?.ToString() ?? ""
+                                    });
+                                }
+                            }
+                        }
+                    }
+                }
+
+                return Ok(model);
+            }
+            catch (ValidationException vx)
+            {
+                return BadRequest(new { message = vx.Message ?? "Validation Error" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.InnerException?.Message ?? ex.Message ?? "Internal Server Error" });
+            }
+        }
+
+
         [HttpGet("/api/GetFeaturedHotel")]
         [EnableCors("AllowAngularApp")]
         public async Task<List<CityGroupedHotelsResponse>> GetFeaturedHotelsAysnc()
@@ -505,7 +961,6 @@ namespace BookingTime.Controllers
                     Records = 4;
 
                 List<FeaturedHotelsResponseModel> properties = new List<FeaturedHotelsResponseModel>();
-                BookingtimeContext _context = new BookingtimeContext(_configuration);
                 string? ConnectionString = _configuration.GetConnectionString("BookingTimeConnection");
                 using (SqlConnection con = new SqlConnection(ConnectionString))
                 {
@@ -534,11 +989,14 @@ namespace BookingTime.Controllers
                                     Charges = Convert.ToDecimal(reader["CHARGES"]),
                                     Discount = Convert.ToDecimal(reader["DISCOUNT"]),
                                     CurrencyId = Convert.ToInt32(reader["CURRENCY_ID"]),
+                                    CityId = Convert.ToInt32(reader["CityId"]),
                                     CityName = reader["CityName"].ToString(),
                                     CountryName = reader["CountryName"].ToString(),
                                     StateName = reader["StateName"].ToString(),
                                     Rating = reader["Rating"].ToString(),
                                     Thumbnail = reader["Thumbnail"].ToString(),
+                                    Currency = reader["Currency"].ToString(),
+                                    CurrencySymbol = reader["CurrencySymbol"].ToString(),
                                     amenity = _context.PropertyAmenities
                                 .Where(pa => pa.PropertyDetailId == Convert.ToInt32(reader["ID"]))
                                 .Join(_context.Amenities,
@@ -588,7 +1046,6 @@ namespace BookingTime.Controllers
                     Records = 4;
 
                 List<PopularAttractionResponseModel> properties = new List<PopularAttractionResponseModel>();
-                BookingtimeContext _context = new BookingtimeContext(_configuration);
                 string? ConnectionString = _configuration.GetConnectionString("BookingTimeConnection");
                 using (SqlConnection con = new SqlConnection(ConnectionString))
                 {
@@ -616,12 +1073,16 @@ namespace BookingTime.Controllers
                                     BasePrice = Convert.ToDecimal(reader["BASE_PRICE"]),
                                     Charges = Convert.ToDecimal(reader["CHARGES"]),
                                     Discount = Convert.ToDecimal(reader["DISCOUNT"]),
+                                    CityId = Convert.ToInt32(reader["CityId"]),
                                     CurrencyId = Convert.ToInt32(reader["CURRENCY_ID"]),
                                     CityName = reader["CityName"].ToString(),
                                     CountryName = reader["CountryName"].ToString(),
                                     StateName = reader["StateName"].ToString(),
                                     Reviews = reader["ReviewCount"].ToString(),
                                     Thumbnail = reader["Thumbnail"].ToString(),
+                                    Rating = reader["Rating"].ToString(),
+                                    Currency = reader["Currency"].ToString(),
+                                    CurrencySymbol = reader["CurrencySymbol"].ToString(),
                                     amenity = _context.PropertyAmenities
                                 .Where(pa => pa.PropertyDetailId == Convert.ToInt32(reader["ID"]))
                                 .Join(_context.Amenities,
@@ -660,13 +1121,13 @@ namespace BookingTime.Controllers
             }
         }
 
+
         [HttpPost("/api/AddPropertyReview")]
         [EnableCors("AllowAngularApp")]
         public async Task<IActionResult> AddPropertyReviewAysnc([FromBody] AddPropertyReviewRequestModel req)
         {
             try
             {
-                BookingtimeContext _context = new BookingtimeContext(_configuration);
                 var propertyDetails = _context.PropertyDetails.Where(x => x.Id == req.propertyId).FirstOrDefault();
                 if (propertyDetails == null)
                     throw new Exception("Property not found");
@@ -702,7 +1163,6 @@ namespace BookingTime.Controllers
         {
             try
             {
-                BookingtimeContext _context = new BookingtimeContext(_configuration);
                 var propertyReview = _context.PropertyReviews.Where(x => x.Id == req.reviewId).FirstOrDefault();
                 if (propertyReview == null)
                     throw new Exception("propertyReview not found");
@@ -735,7 +1195,7 @@ namespace BookingTime.Controllers
         {
             try
             {
-                BookingtimeContext _context = new BookingtimeContext(_configuration);
+
                 List<string> imagePaths = new List<string>();
                 var propertyDetails = _context.PropertyDetails.Where(x => x.Id == req.propertyId).FirstOrDefault();
                 if (propertyDetails == null)
@@ -747,7 +1207,7 @@ namespace BookingTime.Controllers
                 //    imagePaths.Add(path);
                 //}
 
-//                propertyDetails.Images = string.Join(",", imagePaths);
+                //                propertyDetails.Images = string.Join(",", imagePaths);
                 _context.PropertyDetails.Update(propertyDetails);
                 await _context.SaveChangesAsync();
                 return true;
@@ -769,11 +1229,8 @@ namespace BookingTime.Controllers
         {
             try
             {
-
-
                 List<PropertyReviewsResponseModel> reviews = new List<PropertyReviewsResponseModel>();
                 PropertyReviewsResponseModeldetails model = new PropertyReviewsResponseModeldetails();
-                BookingtimeContext _context = new BookingtimeContext(_configuration);
                 string? ConnectionString = _configuration.GetConnectionString("BookingTimeConnection");
                 SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder(ConnectionString);
                 builder.ConnectTimeout = 2500;
@@ -787,7 +1244,7 @@ namespace BookingTime.Controllers
                     cmd.CommandTimeout = 0;
 
                     cmd.Parameters.AddRange(new[]
-                 {
+                    {
                  new SqlParameter("@propertyId", req.propertyId),
                  new SqlParameter("@Page",req.PaginationInfo.Page),
                  new SqlParameter("@PageSize", req.PaginationInfo.RowsPerPage)
@@ -832,7 +1289,6 @@ namespace BookingTime.Controllers
         {
             try
             {
-                BookingtimeContext _context = new BookingtimeContext(_configuration);
                 var propertyId = new SqlParameter("@PropertyId", PropertyId);
                 var results = new List<RatingPercentageResponseModel>();
 
@@ -872,5 +1328,187 @@ namespace BookingTime.Controllers
         }
 
 
+
+        [HttpGet("/api/GetAllBeachAccessList")]
+        public async Task<IActionResult> GetAllBeachAccessesListAsync()
+        {
+            try
+            {
+
+
+                var BeachAccess = await _context.BeachAccesses.Select(x => new
+                {
+                    Id = x.Id,
+                    Name = x.BeachAccess1,
+                }).ToListAsync();
+                return Ok(BeachAccess);
+
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Internal Server Error", error = ex.Message });
+            }
+
+        }
+
+        [HttpGet("/api/GetAllEntirePlacesList")]
+        public async Task<IActionResult> GetAllEntirePlacesListAsync()
+        {
+            try
+            {
+                var EntirePlaces = await _context.EntirePlaces.Select(x => new
+                {
+                    Id = x.Id,
+                    Name = x.EntirePlaces,
+                }).ToListAsync();
+                return Ok(EntirePlaces);
+
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Internal Server Error", error = ex.Message });
+            }
+
+        }
+
+        [HttpGet("/api/GetAllFacilityList")]
+        public async Task<IActionResult> GetAllFacilityListAsync()
+        {
+            try
+            {
+                var Facility = await _context.Facilities.Select(x => new
+                {
+                    Id = x.Id,
+                    Name = x.Facilities,
+                }).ToListAsync();
+                return Ok(Facility);
+
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Internal Server Error", error = ex.Message });
+            }
+
+        }
+
+        [HttpGet("/api/GetAllFunThingsToDoList")]
+        public async Task<IActionResult> GetAllFunThingsListAsync()
+        {
+            try
+            {
+                var FunThings = await _context.FunThingsToDos.Select(x => new
+                {
+                    Id = x.Id,
+                    Name = x.FunThings,
+                }).ToListAsync();
+                return Ok(FunThings);
+
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Internal Server Error", error = ex.Message });
+            }
+
+        }
+
+        [HttpGet("/api/GetAllPopularFiltersList")]
+        public async Task<IActionResult> GetAllPopularFiltersListAsync()
+        {
+            try
+            {
+                var Popular = await _context.PopularFilters.Select(x => new
+                {
+                    Id = x.Id,
+                    Name = x.PopularFilters,
+                }).ToListAsync();
+                return Ok(Popular);
+
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Internal Server Error", error = ex.Message });
+            }
+
+        }
+
+        [HttpGet("/api/GetAllRoomAccessList")]
+        public async Task<IActionResult> GetAllRoomAccessListAsync()
+        {
+            try
+            {
+                var RoomAccess = await _context.RoomAccessibilities.Select(x => new
+                {
+                    Id = x.Id,
+                    Name = x.RoomAccessibility1,
+                }).ToListAsync();
+                return Ok(RoomAccess);
+
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Internal Server Error", error = ex.Message });
+            }
+
+        }
+
+        [HttpGet("/api/GetAllRoomFacilityList")]
+        public async Task<IActionResult> GetAllRoomFacilityListAsync()
+        {
+            try
+            {
+                var RoomFacility = await _context.RoomFacilities.Select(x => new
+                {
+                    Id = x.Id,
+                    Name = x.RoomFacilities,
+                }).ToListAsync();
+                return Ok(RoomFacility);
+
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Internal Server Error", error = ex.Message });
+            }
+
+        }
+
+        [HttpGet("/api/GetAllPropertyAccessibilitiesList")]
+        public async Task<IActionResult> GetAllPropertyAccessibilitiesListAsync()
+        {
+            try
+            {
+                var PropertyAccessibilities = await _context.PropertyAccessibilities.Select(x => new
+                {
+                    Id = x.Id,
+                    Name = x.PropertyAccessibility1,
+                }).ToListAsync();
+                return Ok(PropertyAccessibilities);
+
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Internal Server Error", error = ex.Message });
+            }
+
+        }
+
+        [HttpGet("/api/GetAllPropertyTypeList")]
+        public async Task<IActionResult> GetAllPropertyTypeListAsync()
+        {
+            try
+            {
+                var PropertyType = await _context.PropertyTypes.Select(x => new
+                {
+                    Id = x.Id,
+                    Name = x.PropertyType1,
+                }).ToListAsync();
+                return Ok(PropertyType);
+
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Internal Server Error", error = ex.Message });
+            }
+
+        }
     }
 }

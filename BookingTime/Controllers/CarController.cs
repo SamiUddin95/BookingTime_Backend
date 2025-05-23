@@ -13,170 +13,138 @@ using System.Data;
 using static BookingTime.DTO.ResponseModel.CarDetailsResponseModel;
 using static System.Net.Mime.MediaTypeNames;
 using System.Linq;
+using System.Globalization;
+using BookingTime.DTO;
+using BookingTime.Service;
+using System.Linq.Expressions;
 
-namespace BookingTime.Controllers
-{
-    public class CarController : Controller
-    {
+namespace BookingTime.Controllers {
+    public class CarController : Controller {
         private readonly IConfiguration _configuration;
+        private readonly AppDbContext _context;
+        private readonly QueryContext _queryContext;
+        private readonly IFileLoaderService _loaderService;
+        private readonly ICarRentalService _carRentalService;
 
-        public CarController(IConfiguration configuration)
-        {
+        public CarController(
+            IConfiguration configuration,
+            AppDbContext context,
+            QueryContext context2,
+            IFileLoaderService loaderService,
+            ICarRentalService carRentalService
+            ) {
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+            _context = context;
+            _queryContext = context2;
+            _loaderService = loaderService;
+            _loaderService = loaderService;
+            _carRentalService = carRentalService;
         }
 
 
         [HttpGet("/api/GetAllFuelTypeList")]
-        public async Task<IActionResult> GetAllFuelTypeListAsync()
-        {
-            try
-            {
-                var connectionString = _configuration.GetConnectionString("BookingTimeConnection");
+        public async Task<IActionResult> GetAllFuelTypeListAsync() {
+            try {
+                var FuelType = await _context.FuelTypes.Select(x => new {
+                    Id = x.Id,
+                    Name = x.FuelType1,
 
-                using (BookingtimeContext _context = new BookingtimeContext(_configuration))
-                {
+                }).ToListAsync();
+                return Ok(FuelType);
 
-                    var FuelType = await _context.FuelTypes.Select(x => new
-                    {
-                        Id = x.Id,
-                        Name = x.FuelType1,
-
-                    }).ToListAsync();
-                    return Ok(FuelType);
-                }
             }
-            catch (Exception ex)
-            {
+            catch(Exception ex) {
                 return StatusCode(500, new { message = "Internal Server Error", error = ex.Message });
             }
 
         }
 
         [HttpGet("/api/GetAllOdometerReadingList")]
-        public async Task<IActionResult> GetAllOdometerReadingListAsync()
-        {
-            try
-            {
-                var connectionString = _configuration.GetConnectionString("BookingTimeConnection");
+        public async Task<IActionResult> GetAllOdometerReadingListAsync() {
+            try {
 
-                using (BookingtimeContext _context = new BookingtimeContext(_configuration))
-                {
+                var OdometerReading = await _context.OdometerReadings.Select(x => new {
+                    Id = x.Id,
+                    Name = x.OdometerReading1,
 
-                    var OdometerReading = await _context.OdometerReadings.Select(x => new
-                    {
-                        Id = x.Id,
-                        Name = x.OdometerReading1,
+                }).ToListAsync();
+                return Ok(OdometerReading);
 
-                    }).ToListAsync();
-                    return Ok(OdometerReading);
-                }
             }
-            catch (Exception ex)
-            {
+            catch(Exception ex) {
                 return StatusCode(500, new { message = "Internal Server Error", error = ex.Message });
             }
 
         }
 
         [HttpGet("/api/GetAllSeatbeltTypeList")]
-        public async Task<IActionResult> GetAllSeatbeltTypeListAsync()
-        {
-            try
-            {
-                var connectionString = _configuration.GetConnectionString("BookingTimeConnection");
+        public async Task<IActionResult> GetAllSeatbeltTypeListAsync() {
+            try {
 
-                using (BookingtimeContext _context = new BookingtimeContext(_configuration))
-                {
+                var SeatbeltType = await _context.SeatbeltTypes.Select(x => new {
+                    Id = x.Id,
+                    Name = x.SeatbeltType1,
 
-                    var SeatbeltType = await _context.SeatbeltTypes.Select(x => new
-                    {
-                        Id = x.Id,
-                        Name = x.SeatbeltType1,
+                }).ToListAsync();
+                return Ok(SeatbeltType);
 
-                    }).ToListAsync();
-                    return Ok(SeatbeltType);
-                }
             }
-            catch (Exception ex)
-            {
+            catch(Exception ex) {
                 return StatusCode(500, new { message = "Internal Server Error", error = ex.Message });
             }
 
         }
 
         [HttpGet("/api/GetAllVehicleConditionList")]
-        public async Task<IActionResult> GetAllVehicleConditionListAsync()
-        {
-            try
-            {
-                var connectionString = _configuration.GetConnectionString("BookingTimeConnection");
+        public async Task<IActionResult> GetAllVehicleConditionListAsync() {
+            try {
+                var VehicleCondition = await _context.VehicleConditions.Select(x => new {
+                    Id = x.Id,
+                    Name = x.Condition,
 
-                using (BookingtimeContext _context = new BookingtimeContext(_configuration))
-                {
+                }).ToListAsync();
+                return Ok(VehicleCondition);
 
-                    var VehicleCondition = await _context.VehicleConditions.Select(x => new
-                    {
-                        Id = x.Id,
-                        Name = x.Condition,
-
-                    }).ToListAsync();
-                    return Ok(VehicleCondition);
-                }
             }
-            catch (Exception ex)
-            {
+            catch(Exception ex) {
                 return StatusCode(500, new { message = "Internal Server Error", error = ex.Message });
             }
 
         }
 
         [HttpGet("/api/GetAllVehicleMakeList")]
-        public async Task<IActionResult> GetAllVehicleMakeListAsync()
-        {
-            try
-            {
-                var connectionString = _configuration.GetConnectionString("BookingTimeConnection");
+        public async Task<IActionResult> GetAllVehicleMakeListAsync() {
+            try {
 
-                using (BookingtimeContext _context = new BookingtimeContext(_configuration))
-                {
 
-                    var VehicleMake = await _context.VehicleMakes.Select(x => new
-                    {
-                        Id = x.Id,
-                        Name = x.VehicleMake1,
+                var VehicleMake = await _context.VehicleMakes.Select(x => new {
+                    Id = x.Id,
+                    Name = x.VehicleMake1,
 
-                    }).ToListAsync();
-                    return Ok(VehicleMake);
-                }
+                }).ToListAsync();
+                return Ok(VehicleMake);
+
             }
-            catch (Exception ex)
-            {
+            catch(Exception ex) {
                 return StatusCode(500, new { message = "Internal Server Error", error = ex.Message });
             }
 
         }
 
         [HttpGet("/api/GetAllVehicleYearList")]
-        public async Task<IActionResult> GetAllVehicleYearListAsync()
-        {
-            try
-            {
-                var connectionString = _configuration.GetConnectionString("BookingTimeConnection");
+        public async Task<IActionResult> GetAllVehicleYearListAsync() {
+            try {
 
-                using (BookingtimeContext _context = new BookingtimeContext(_configuration))
-                {
 
-                    var VehicleYear = await _context.VehicleYears.Select(x => new
-                    {
-                        Id = x.Id,
-                        Name = x.VehicleYear1,
+                var VehicleYear = await _context.VehicleYears.Select(x => new {
+                    Id = x.Id,
+                    Name = x.VehicleYear1,
 
-                    }).ToListAsync();
-                    return Ok(VehicleYear);
-                }
+                }).ToListAsync();
+                return Ok(VehicleYear);
+
             }
-            catch (Exception ex)
-            {
+            catch(Exception ex) {
                 return StatusCode(500, new { message = "Internal Server Error", error = ex.Message });
             }
 
@@ -184,11 +152,8 @@ namespace BookingTime.Controllers
 
         [HttpPost("/api/AddCarDetails")]
         [EnableCors("AllowAngularApp")]
-        public async Task<IActionResult> AddCarDetailsAysnc([FromForm] AddCarDetailsRequestModel request)
-        {
-            try
-            {
-                BookingtimeContext _context = new BookingtimeContext(_configuration);
+        public async Task<IActionResult> AddCarDetailsAysnc([FromForm] AddCarDetailsRequestModel request) {
+            try {
 
                 string imagePath = string.Empty;
                 var existingCarDetails = await _context.CarDetails
@@ -204,12 +169,10 @@ namespace BookingTime.Controllers
                        p.Features == request.features)
            .FirstOrDefaultAsync();
 
-                if (existingCarDetails != null)
-                {
+                if(existingCarDetails != null) {
                     return BadRequest(new { Message = "Car with these details already exist in the system. Please check your input and try again.", sucess = false });
                 }
-                if (request.image != null)
-                {
+                if(request.image != null) {
                     imagePath = await SaveImageAsync(request.image);
                 }
 
@@ -247,12 +210,10 @@ namespace BookingTime.Controllers
                 _context.CarDetails.Add(detail);
                 await _context.SaveChangesAsync();
 
-                if (request.carImages != null && request.carImages.Count > 0)
-                {
+                if(request.carImages != null && request.carImages.Count > 0) {
                     var cars = new List<CarImage>();
 
-                    foreach (var car in request.carImages)
-                    {
+                    foreach(var car in request.carImages) {
                         cars.Add(new CarImage
                         {
                             CarId = detail.Id,
@@ -266,127 +227,121 @@ namespace BookingTime.Controllers
 
                 return Ok(new { Message = $@"Successfully Created : CarId : {detail.Id}", success = true });
             }
-            catch (ValidationException vx)
-            {
+            catch(ValidationException vx) {
                 throw new ValidationException(vx.Message != null ? vx.Message.ToString() : "Validation Error");
             }
-            catch (Exception ex)
-            {
+            catch(Exception ex) {
                 throw new Exception(ex.InnerException != null ? ex.InnerException.ToString() : "Internal Server Error");
 
             }
         }
 
-        [HttpPost("/api/GetCarDetailsList")]
-        [EnableCors("AllowAngularApp")]
-        public async Task<CarDetailsResponseModeldetails> GetCarDetailsListAsync([FromBody] CarDetailsRequestModel request)
-        {
-            try
-            {
-                BookingtimeContext _context = new BookingtimeContext(_configuration);
+        //[HttpPost("/api/GetCarDetailsList")]
+        //[EnableCors("AllowAngularApp")]
+        //public async Task<CarDetailsResponseModeldetails> GetCarDetailsListAsync([FromBody] CarDetailsRequestModel request)
+        //{
+        //    try
+        //    {
 
-                string? ConnectionString = _configuration.GetConnectionString("BookingTimeConnection");
-                List<CarDetailsResponseModel> carDetailsList = new List<CarDetailsResponseModel>();
-                CarDetailsResponseModeldetails model = new CarDetailsResponseModeldetails();
-                SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder(ConnectionString);
-                builder.ConnectTimeout = 2500;
-                SqlConnection con = new SqlConnection(builder.ConnectionString);
-                System.Data.Common.DbDataReader sqlReader;
-                con.Open();
+        //        string? ConnectionString = _configuration.GetConnectionString("BookingTimeConnection");
+        //        List<CarDetailsResponseModel> carDetailsList = new List<CarDetailsResponseModel>();
+        //        CarDetailsResponseModeldetails model = new CarDetailsResponseModeldetails();
+        //        SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder(ConnectionString);
+        //        builder.ConnectTimeout = 2500;
+        //        SqlConnection con = new SqlConnection(builder.ConnectionString);
+        //        System.Data.Common.DbDataReader sqlReader;
+        //        con.Open();
 
-                using (SqlCommand cmd = con.CreateCommand())
-                {
-                    cmd.CommandText = "Sp_CarDetailsList_Updated";
-                    cmd.CommandType = System.Data.CommandType.StoredProcedure;
-                    cmd.CommandTimeout = 0;
+        //        using (SqlCommand cmd = con.CreateCommand())
+        //        {
+        //            cmd.CommandText = "Sp_CarDetailsList_Updated";
+        //            cmd.CommandType = System.Data.CommandType.StoredProcedure;
+        //            cmd.CommandTimeout = 0;
 
-                    cmd.Parameters.AddRange(new[]
-                 {
-                 new SqlParameter("@CarId", request.Details.carId),
-                 new SqlParameter("@MakeId", request.Details.makeId),
-                 new SqlParameter("@YearId", request.Details.yearId),
-                 new SqlParameter("@ConditionId", request.Details.conditionId),
-                 new SqlParameter("@FuelTypeId", request.Details.fuelTypeId),
-                 new SqlParameter("@Model", request.Details.model),
-                 new SqlParameter("@MileageLimit", request.Details.mileageLimit),
+        //            cmd.Parameters.AddRange(new[]
+        //         {
+        //         new SqlParameter("@CarId", request.Details.carId),
+        //         new SqlParameter("@MakeId", request.Details.makeId),
+        //         new SqlParameter("@YearId", request.Details.yearId),
+        //         new SqlParameter("@ConditionId", request.Details.conditionId),
+        //         new SqlParameter("@FuelTypeId", request.Details.fuelTypeId),
+        //         new SqlParameter("@Model", request.Details.model),
+        //         new SqlParameter("@MileageLimit", request.Details.mileageLimit),
 
-                 //new SqlParameter("@PickUpLocationId", request.Details.pickUpLocationId),
-                 //new SqlParameter("@DropOffLocationId", request.Details.dropOffLocationId),
-                 new SqlParameter("@PickupDate", request.Details.pickUpDate),
-                 new SqlParameter("@PickupTime", request.Details.pickUpTime),
-                 new SqlParameter("@ReturnDate", request.Details.returnDate),
-                 new SqlParameter("@ReturnTime", request.Details.returnTime),
+        //         //new SqlParameter("@PickUpLocationId", request.Details.pickUpLocationId),
+        //         //new SqlParameter("@DropOffLocationId", request.Details.dropOffLocationId),
+        //         new SqlParameter("@PickupDate", request.Details.pickUpDate),
+        //         new SqlParameter("@PickupTime", request.Details.pickUpTime),
+        //         new SqlParameter("@ReturnDate", request.Details.returnDate),
+        //         new SqlParameter("@ReturnTime", request.Details.returnTime),
 
-                 new SqlParameter("@Page",request.PaginationInfo.Page),
-                 new SqlParameter("@PageSize", request.PaginationInfo.RowsPerPage)
-                });
+        //         new SqlParameter("@Page",request.PaginationInfo.Page),
+        //         new SqlParameter("@PageSize", request.PaginationInfo.RowsPerPage)
+        //        });
 
-                    var adapter = new SqlDataAdapter(cmd);
-                    var ds = new DataSet();
-                    adapter.Fill(ds);
-                    DataTable count = ds.Tables[0];
-                    DataTable list = ds.Tables[1];
+        //            var adapter = new SqlDataAdapter(cmd);
+        //            var ds = new DataSet();
+        //            adapter.Fill(ds);
+        //            DataTable count = ds.Tables[0];
+        //            DataTable list = ds.Tables[1];
 
-                    carDetailsList = list.AsEnumerable()
-                        .Select(row => new CarDetailsResponseModel
-                        {
-                            id = row["ID"] != DBNull.Value ? Convert.ToInt32(row["ID"]) : 0,
-                            country = row["CountryName"] != DBNull.Value ? row["CountryName"].ToString() : string.Empty,
-                            city = row["CityName"] != DBNull.Value ? row["CityName"].ToString() : string.Empty,
-                            state = row["StateName"] != DBNull.Value ? row["StateName"].ToString() : string.Empty,
-                            vin = row["VIN"] != DBNull.Value ? row["VIN"].ToString() : string.Empty,
-                            vehicleYear = row["VehicleYear"] != DBNull.Value ? row["VehicleYear"].ToString() : string.Empty,
-                            vehicleMake = row["VehicleMake"] != DBNull.Value ? row["VehicleMake"].ToString() : string.Empty,
-                            model = row["Model"] != DBNull.Value ? row["Model"].ToString() : string.Empty,
-                            odometerReading = row["OdometerReading"] != DBNull.Value ? row["OdometerReading"].ToString() : string.Empty,
-                            vehicleValue = row["VehicleValue"] != DBNull.Value ? Convert.ToString(row["VehicleValue"]) : string.Empty,
-                            vehicleCondition = row["VehicleCondition"] != DBNull.Value ? row["VehicleCondition"].ToString() : string.Empty,
-                            seatblets = row["Seatbelts"] != DBNull.Value && Convert.ToBoolean(row["Seatbelts"]),
-                            seatbletType = row["SeatbeltType"] != DBNull.Value ? row["SeatbeltType"].ToString() : string.Empty,
-                            mobileNumber1 = row["MobileNumber1"] != DBNull.Value ? row["MobileNumber1"].ToString() : string.Empty,
-                            mobileNumber2 = row["MobileNumber2"] != DBNull.Value ? row["MobileNumber2"].ToString() : string.Empty,
-                            startDate = row["StartDate"] != DBNull.Value ? Convert.ToDateTime(row["StartDate"]) : DateTime.MinValue,
-                            endDate = row["EndDate"] != DBNull.Value ? Convert.ToDateTime(row["EndDate"]) : DateTime.MinValue,
-                            mileageLimit = row["MileageLimit"] != DBNull.Value ? Convert.ToInt32(row["MileageLimit"]) : 0,
-                            fuelType = row["FuelType"] != DBNull.Value ? row["FuelType"].ToString() : string.Empty,
-                            features = row["Features"] != DBNull.Value ? row["Features"].ToString() : string.Empty,
-                            thumbnail = row["Photos"] != DBNull.Value ? row["Photos"].ToString() : string.Empty,
-                            capacity = row["PassengerCapacity"] != DBNull.Value ? row["PassengerCapacity"].ToString() : string.Empty,
-                            basePrice = row["BasePrice"] != DBNull.Value ?Convert.ToDecimal(row["BasePrice"]) : 0,
-                            images = _context.CarImages
-                            .Where(pa => pa.CarId == Convert.ToInt32(row["ID"]))
-                            .Select(x => new image
-                            {
-                                carImages = x.ImagePath
-                            })
-                            .ToList()
-                        }).ToList();
-                    model.cardetails = carDetailsList;
-                    model.TotalCount = Convert.ToInt32(count.Rows[0]["TotalCount"]);
+        //            carDetailsList = list.AsEnumerable()
+        //                .Select(row => new CarDetailsResponseModel
+        //                {
+        //                    id = row["ID"] != DBNull.Value ? Convert.ToInt32(row["ID"]) : 0,
+        //                    country = row["CountryName"] != DBNull.Value ? row["CountryName"].ToString() : string.Empty,
+        //                    city = row["CityName"] != DBNull.Value ? row["CityName"].ToString() : string.Empty,
+        //                    state = row["StateName"] != DBNull.Value ? row["StateName"].ToString() : string.Empty,
+        //                    vin = row["VIN"] != DBNull.Value ? row["VIN"].ToString() : string.Empty,
+        //                    vehicleYear = row["VehicleYear"] != DBNull.Value ? row["VehicleYear"].ToString() : string.Empty,
+        //                    vehicleMake = row["VehicleMake"] != DBNull.Value ? row["VehicleMake"].ToString() : string.Empty,
+        //                    model = row["Model"] != DBNull.Value ? row["Model"].ToString() : string.Empty,
+        //                    odometerReading = row["OdometerReading"] != DBNull.Value ? row["OdometerReading"].ToString() : string.Empty,
+        //                    vehicleValue = row["VehicleValue"] != DBNull.Value ? Convert.ToString(row["VehicleValue"]) : string.Empty,
+        //                    vehicleCondition = row["VehicleCondition"] != DBNull.Value ? row["VehicleCondition"].ToString() : string.Empty,
+        //                    seatblets = row["Seatbelts"] != DBNull.Value && Convert.ToBoolean(row["Seatbelts"]),
+        //                    seatbletType = row["SeatbeltType"] != DBNull.Value ? row["SeatbeltType"].ToString() : string.Empty,
+        //                    mobileNumber1 = row["MobileNumber1"] != DBNull.Value ? row["MobileNumber1"].ToString() : string.Empty,
+        //                    mobileNumber2 = row["MobileNumber2"] != DBNull.Value ? row["MobileNumber2"].ToString() : string.Empty,
+        //                    startDate = row["StartDate"] != DBNull.Value ? Convert.ToDateTime(row["StartDate"]) : DateTime.MinValue,
+        //                    endDate = row["EndDate"] != DBNull.Value ? Convert.ToDateTime(row["EndDate"]) : DateTime.MinValue,
+        //                    mileageLimit = row["MileageLimit"] != DBNull.Value ? Convert.ToInt32(row["MileageLimit"]) : 0,
+        //                    fuelType = row["FuelType"] != DBNull.Value ? row["FuelType"].ToString() : string.Empty,
+        //                    features = row["Features"] != DBNull.Value ? row["Features"].ToString() : string.Empty,
+        //                    thumbnail = row["Photos"] != DBNull.Value ? row["Photos"].ToString() : string.Empty,
+        //                    capacity = row["PassengerCapacity"] != DBNull.Value ? row["PassengerCapacity"].ToString() : string.Empty,
+        //                    basePrice = row["BasePrice"] != DBNull.Value ? Convert.ToDecimal(row["BasePrice"]) : 0,
+        //                    images = _context.CarImages
+        //                    .Where(pa => pa.CarId == Convert.ToInt32(row["ID"]))
+        //                    .Select(x => new image
+        //                    {
+        //                        carImages = x.ImagePath
+        //                    })
+        //                    .ToList()
+        //                }).ToList();
+        //            model.cardetails = carDetailsList;
+        //            model.TotalCount = Convert.ToInt32(count.Rows[0]["TotalCount"]);
 
-                    return model;
-                }
+        //            return model;
+        //        }
 
-            }
-            catch (ValidationException vx)
-            {
-                throw new ValidationException(vx.Message != null ? vx.Message.ToString() : "Validation Error");
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.InnerException != null ? ex.InnerException.ToString() : "Internal Server Error");
+        //    }
+        //    catch (ValidationException vx)
+        //    {
+        //        throw new ValidationException(vx.Message != null ? vx.Message.ToString() : "Validation Error");
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        throw new Exception(ex.InnerException != null ? ex.InnerException.ToString() : "Internal Server Error");
 
-            }
-        }
+        //    }
+        //}
 
 
         [HttpPost("/api/AddCarBookingDetail")]
         [EnableCors("AllowAngularApp")]
-        public async Task<IActionResult> AddCarBookingDetailAysnc([FromBody] AddCarBookingDetailRequestModel request)
-        {
-            try
-            {
-                BookingtimeContext _context = new BookingtimeContext(_configuration);
+        public async Task<IActionResult> AddCarBookingDetailAysnc([FromBody] AddCarBookingDetailRequestModel request) {
+            try {
                 var detail = new CarBookingDetail
                 {
                     CarId = request.carId,
@@ -407,8 +362,7 @@ namespace BookingTime.Controllers
                 _context.CarBookingDetails.Add(detail);
                 await _context.SaveChangesAsync();
 
-                if (detail.Id > 0)
-                {
+                if(detail.Id > 0) {
                     var passengerDetail = new CarBookingPassengerDetail
                     {
                         BookingDetailId = detail.Id,
@@ -422,38 +376,69 @@ namespace BookingTime.Controllers
                 }
                 return Ok(new { Message = $@"Successfully Created : BookingId : {detail.Id}", success = true });
             }
-            catch (ValidationException vx)
-            {
+            catch(ValidationException vx) {
                 throw new ValidationException(vx.Message != null ? vx.Message.ToString() : "Validation Error");
             }
-            catch (Exception ex)
-            {
+            catch(Exception ex) {
                 throw new Exception(ex.InnerException != null ? ex.InnerException.ToString() : "Internal Server Error");
 
             }
         }
 
-        private async Task<string> SaveImageAsync(IFormFile? file, string folder = "")
-        {
-            if (file == null || file.Length == 0)
+        private async Task<string> SaveImageAsync(IFormFile? file, string folder = "") {
+            if(file == null || file.Length == 0)
                 return string.Empty;
 
             string folderPath = _configuration["CarImagesPath"] + folder;
-            if (!Directory.Exists(folderPath))
-            {
-                Directory.CreateDirectory(folderPath);
+            if(!Directory.Exists(folderPath.Trim())) {
+                Directory.CreateDirectory(folderPath.Trim());
             }
-            string fileName = $"{Guid.NewGuid()}_{file.FileName}";
-            string filePath = Path.Combine(folderPath, fileName);
+            string fileName = $"{Guid.NewGuid()}_{file.FileName.Trim()}";
+            string filePath = Path.Combine(folderPath.Trim(), fileName.Trim());
 
-            using (var stream = new FileStream(filePath, FileMode.Create))
-            {
+            using(var stream = new FileStream(filePath.Trim(), FileMode.Create)) {
                 await file.CopyToAsync(stream);
             }
 
             string relativePath = filePath.Substring(filePath.IndexOf("assets", StringComparison.OrdinalIgnoreCase));
 
             return relativePath.Replace("\\", "/");
+        }
+
+        [HttpPost("api/filter-cars-list")]
+        public async Task<IActionResult> FilterCars([FromBody] CarFilterDTO filter) {
+
+            var result = await _carRentalService.GetAvailableCarsAsync(filter);
+            return Ok(result);
+
+        }
+
+        [HttpGet("api/cities/having-cars")]
+        public async Task<IActionResult> GetAllCitiesHavingCarss() {
+            try {
+                var citiesWithCars = _context.Cities
+                            .Include(c => c.CarDetails)
+                            .Where(c => c.CarDetails.Any())
+                            .Select(c => new {
+                                c.CityId,
+                                c.CityName
+                            })
+                            .ToList();
+
+                return Ok(citiesWithCars);
+            }
+            catch(Exception e) {
+                throw e;
+            }
+
+        }
+
+        [HttpGet("api/car-categories")]
+        public async Task<IActionResult> GetAllCarCategories() {
+            var data = _context.CarCategories
+                    .ToList();
+
+            return Ok(data);
         }
 
     }

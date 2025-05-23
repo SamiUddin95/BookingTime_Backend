@@ -9,7 +9,7 @@ public partial class CarDetail
 
     public int CountyId { get; set; }
 
-    public int CityId { get; set; }
+    public long? CityId { get; set; }
 
     public int StateId { get; set; }
 
@@ -39,31 +39,39 @@ public partial class CarDetail
 
     public string? MobileNumber2 { get; set; }
 
-    public DateTime? StartDate { get; set; }
-
-    public DateTime? EndDate { get; set; }
-
     public TimeSpan? StartTime { get; set; }
 
     public TimeSpan? EndTime { get; set; }
 
     public decimal? BasePrice { get; set; }
 
+    public DateTime? StartDate { get; set; }
+
+    public DateTime? EndDate { get; set; }
+
     public int MileageLimit { get; set; }
 
-    public int FuelTypeId { get; set; }
-
-    public string Features { get; set; } = null!;
+    public int? FuelTypeId { get; set; }
 
     public string Transmission { get; set; } = null!;
 
-    public string AdditionalInfo { get; set; } = null!;
+    public string? AdditionalInfo { get; set; }
 
-    public string Photos { get; set; } = null!;
+    public string Features { get; set; } = null!;
 
-    public virtual ICollection<CarImage> CarImages { get; } = new List<CarImage>();
+    public string? Photos { get; set; }
 
-    public virtual FuelType FuelType { get; set; } = null!;
+    public decimal? RentPerDay { get; set; }
+
+    public int? CategoryId { get; set; }
+
+    public virtual ICollection<CarBooking> CarBookings { get; } = new List<CarBooking>();
+
+    public virtual CarCategory? Category { get; set; }
+
+    public virtual City? City { get; set; }
+
+    public virtual FuelType? FuelType { get; set; }
 
     public virtual VehicleMake Make { get; set; } = null!;
 

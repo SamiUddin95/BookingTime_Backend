@@ -18,4 +18,6 @@ public partial class User
     public string? VerificationToken { get; set; }
 
     public DateTime? TokenExpireTime { get; set; }
+
+    public virtual ICollection<CarBooking> CarBookings { get; } = new List<CarBooking>();
 }
