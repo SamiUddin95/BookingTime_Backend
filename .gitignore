@@ -363,4 +363,5 @@ MigrationBackup/
 FodyWeavers.xsd
 
 .BookingTime/obj
+.BookingTime/bin
 .vs
