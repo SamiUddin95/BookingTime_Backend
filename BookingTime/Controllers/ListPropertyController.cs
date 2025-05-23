@@ -989,14 +989,11 @@ namespace BookingTime.Controllers
                                     Charges = Convert.ToDecimal(reader["CHARGES"]),
                                     Discount = Convert.ToDecimal(reader["DISCOUNT"]),
                                     CurrencyId = Convert.ToInt32(reader["CURRENCY_ID"]),
-                                    CityId = Convert.ToInt32(reader["CityId"]),
                                     CityName = reader["CityName"].ToString(),
                                     CountryName = reader["CountryName"].ToString(),
                                     StateName = reader["StateName"].ToString(),
                                     Rating = reader["Rating"].ToString(),
                                     Thumbnail = reader["Thumbnail"].ToString(),
-                                    Currency = reader["Currency"].ToString(),
-                                    CurrencySymbol = reader["CurrencySymbol"].ToString(),
                                     amenity = _context.PropertyAmenities
                                 .Where(pa => pa.PropertyDetailId == Convert.ToInt32(reader["ID"]))
                                 .Join(_context.Amenities,
@@ -1073,16 +1070,12 @@ namespace BookingTime.Controllers
                                     BasePrice = Convert.ToDecimal(reader["BASE_PRICE"]),
                                     Charges = Convert.ToDecimal(reader["CHARGES"]),
                                     Discount = Convert.ToDecimal(reader["DISCOUNT"]),
-                                    CityId = Convert.ToInt32(reader["CityId"]),
                                     CurrencyId = Convert.ToInt32(reader["CURRENCY_ID"]),
                                     CityName = reader["CityName"].ToString(),
                                     CountryName = reader["CountryName"].ToString(),
                                     StateName = reader["StateName"].ToString(),
                                     Reviews = reader["ReviewCount"].ToString(),
                                     Thumbnail = reader["Thumbnail"].ToString(),
-                                    Rating = reader["Rating"].ToString(),
-                                    Currency= reader["Currency"].ToString(),
-                                    CurrencySymbol = reader["CurrencySymbol"].ToString(),
                                     amenity = _context.PropertyAmenities
                                 .Where(pa => pa.PropertyDetailId == Convert.ToInt32(reader["ID"]))
                                 .Join(_context.Amenities,

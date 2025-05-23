@@ -185,9 +185,6 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.OperatingAirport)
                 .HasMaxLength(255)
                 .HasColumnName("OPERATING_AIRPORT");
-            entity.Property(e => e.CompanyName)
-                .HasMaxLength(50)
-                .HasColumnName("COMPANY_NAME");
             entity.Property(e => e.StateId).HasColumnName("STATE_ID");
             entity.Property(e => e.Status)
                 .HasMaxLength(50)
