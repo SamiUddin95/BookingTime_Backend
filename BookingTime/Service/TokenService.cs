@@ -13,26 +13,22 @@ namespace BookingTime.Service
             _configuration = configuration;
         }
 
-        public string GenerateJwtToken(User user)
+        public string GenerateJwtToken(User user,long groupId)
         {
-            // Define the secret key and algorithm for signing the token
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["TokenSecretKey"]));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
-
-            // Set the claims for the JWT token (user information)
             var claims = new[]
             {
-                new Claim(JwtRegisteredClaimNames.Sub, user.Email),  // Subject: the user's email
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),  // JWT ID (unique)
-                new Claim(ClaimTypes.Name, user.Email),  // User's full name (example)
-                new Claim("IsVerified", user.IsVerified.ToString())  // Additional claim indicating if the account is verified
+                new Claim(JwtRegisteredClaimNames.Sub, user.Email),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new Claim(ClaimTypes.Name, user.Email),
+                new Claim("IsVerified", user.IsVerified.ToString()),
+                new Claim("GroupId", groupId.ToString())
              };
-
-            // Create the JWT token
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claims),
-                Expires = DateTime.UtcNow.AddHours(1),  // Set the token expiry time
+                Expires = DateTime.UtcNow.AddHours(1),
                 SigningCredentials = credentials
             };
 

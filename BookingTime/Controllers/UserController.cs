@@ -39,18 +39,28 @@ namespace BookingTime.Controllers
             if (string.IsNullOrEmpty(form.Email) || string.IsNullOrEmpty(form.Password))
             {
                 return BadRequest(new { code = 400, msg = "Please enter credentials!" });
-            } 
-            var user = await _context.Users.SingleOrDefaultAsync(u => u.Email == form.Email);
+            }
+            //var user = await _context.Users.SingleOrDefaultAsync(u => u.Email == form.Email);
+            var user = await _context.Users
+                .Where(u => u.Email == form.Email)
+                .Select(u => new
+                {
+                    User = u,
+                    GroupId = _context.GroupUsers
+                        .Where(g => Convert.ToInt32(g.UserId) == u.Id)
+                        .FirstOrDefault() // Assuming 1 group per user. Use ToList() if multiple groups.
+                })
+                .FirstOrDefaultAsync();
             if (user == null)
             {
                 return Ok(new { code = 401, msg = "Login details not found!" });
             } 
-            if (user.IsVerified==false)
+            if (user.User.IsVerified==false)
             {
                 return Ok(new { code = 401, msg = "Please verify your account!" });
             }
-            var token = _tokenService.GenerateJwtToken(user); 
-            return Ok(new { code = 200, msg = "Logged in successfully!", data = token });
+            var token = _tokenService.GenerateJwtToken(user.User,user.GroupId.GroupId); 
+            return Ok(new { code = 200, msg = "Logged in successfully!", token = token });
         }
 
 
