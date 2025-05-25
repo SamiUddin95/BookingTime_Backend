@@ -32,7 +32,6 @@ namespace BookingTime.Controllers
             _tokenService = tokenService;
         }
 
-
         [HttpPost("/api/loginRequest")]
         public async Task<IActionResult> Login([FromBody] LoginRequest form)
         {
@@ -63,7 +62,6 @@ namespace BookingTime.Controllers
             return Ok(new { code = 200, msg = "Logged in successfully!", token = token });
         }
 
-
         [HttpPost]
         [Route("/api/signUp")]
         public object signUp([FromBody] SignUpRequestModel form)
@@ -81,6 +79,7 @@ namespace BookingTime.Controllers
                     user.Email = form.Email;
                     user.Password = form.Password;
                     user.IsVerified = false;
+                    user.CreatedOn = DateTime.Now;
                     user.VerificationToken = Guid.NewGuid().ToString();
                     _context.Users.Add(user);
                     _context.SaveChanges();
@@ -94,7 +93,7 @@ namespace BookingTime.Controllers
                 {
                     JsonConvert.SerializeObject(new { msg = ex.Message });
                 }
-                return JsonConvert.SerializeObject(new { msg = "Message" });
+                return JsonConvert.SerializeObject(new { msg = "An unexpected error" });
             }
             catch (Exception ex)
             {
@@ -217,6 +216,105 @@ namespace BookingTime.Controllers
                 return StatusCode(500, new { message = "Internal Server Error", error = ex.Message });
             }
 
+        }
+
+
+        [HttpGet("/api/GetAllGroupList")]
+        [EnableCors("AllowAngularApp")]
+        public async Task<IActionResult> GetAllGroupList()
+        {
+            try
+            { 
+                var user = await _context.Groups.ToListAsync();
+                return Ok(user);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Internal Server Error", error = ex.Message });
+            }
+
+        }
+
+        [HttpGet("/api/GetUserDetailById")]
+        [EnableCors("AllowAngularApp")]
+        public async Task<IActionResult> GetUserDetailById(int id)
+        {
+            try
+            {
+
+                var user = await _context.Users
+                 .Where(u => u.Id == id)
+                 .Select(u => new
+                 {
+                     User = u,
+                     GroupId = _context.GroupUsers
+                         .Where(g => Convert.ToInt32(g.UserId) == u.Id)
+                         .FirstOrDefault() // Assuming 1 group per user. Use ToList() if multiple groups.
+                 })
+                 .FirstOrDefaultAsync();
+                return Ok(user);
+
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Internal Server Error", error = ex.Message });
+            }
+
+        }
+
+        [HttpPost]
+        [Route("/api/UpdateUser")]
+        public object UpdateUser([FromBody] UserModel form)
+        {
+            try
+            {
+                try
+                {
+                    var usrChk = _context.Users.SingleOrDefault(u => u.Email == form.email);
+                    if (usrChk != null)
+                    {
+                        User user = new User();
+                        usrChk.IsVerified = form.isVerified;
+                        usrChk.FullName = form.fullName;
+                        _context.Users.Update(user);
+                        if (form.groupId > 0)
+                        {
+                            var groupUser = _context.GroupUsers.Where(x=>x.GroupId==form.groupId && x.UserId== Convert.ToString(form.userId)).FirstOrDefault();
+                            if (groupUser == null)
+                            {
+                                GroupUser grPusr = new GroupUser();
+                                grPusr.UserId = Convert.ToString(form.userId);
+                                grPusr.GroupId = form.groupId;
+                                _context.GroupUsers.Add(grPusr);
+                            }
+                            else
+                            {
+                               var userDeleted=_context.GroupUsers.Remove(groupUser);
+                                GroupUser grPusr = new GroupUser();
+                                grPusr.UserId = Convert.ToString(form.userId);
+                                grPusr.GroupId = form.groupId;
+                                _context.GroupUsers.Add(grPusr);
+
+                            }
+                        }
+                        var userUpdated=_context.SaveChanges();
+                        if (userUpdated != null)
+                            return JsonConvert.SerializeObject(new { code = 200, msg = "User has been updated!" });
+                    }
+
+
+                }
+
+                catch (Exception ex)
+                {
+                    JsonConvert.SerializeObject(new { msg = ex.Message });
+                }
+                return JsonConvert.SerializeObject(new { msg = "An unexpected error" });
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
         }
     }
 }

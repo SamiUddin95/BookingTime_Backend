@@ -19,5 +19,7 @@ public partial class User
 
     public DateTime? TokenExpireTime { get; set; }
 
+    public DateTime? CreatedOn { get; set; }
+
     public virtual ICollection<CarBooking> CarBookings { get; } = new List<CarBooking>();
 }

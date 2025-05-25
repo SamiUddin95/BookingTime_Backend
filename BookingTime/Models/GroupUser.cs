@@ -8,4 +8,6 @@ public partial class GroupUser
     public int GroupId { get; set; }
 
     public string UserId { get; set; } = null!;
+
+    public int Id { get; set; }
 }

@@ -89,7 +89,7 @@ namespace BookingTime.Controllers
                     VehicleType = request.vehicleType,
                     Capacity = request.capacity,
                     BasePrice = request.basePrice,
-                    Currency = request.currency,
+                    Currency = Convert.ToInt32(request.currency),
                     AvailabilityStatus = request.availabilityStatus,
                     Description = request.description,
                     ImageUrl = imagePath,

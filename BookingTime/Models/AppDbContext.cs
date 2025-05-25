@@ -158,6 +158,10 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.BookingPerDay).HasColumnName("BOOKING_PER_DAY");
             entity.Property(e => e.Capacity).HasColumnName("CAPACITY");
             entity.Property(e => e.CityId).HasColumnName("CITY_ID");
+            entity.Property(e => e.CompanyName)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("COMPANY_NAME");
             entity.Property(e => e.ContactNumber)
                 .HasMaxLength(50)
                 .HasColumnName("CONTACT_NUMBER");
@@ -165,9 +169,7 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.CreatedAt)
                 .HasColumnType("datetime")
                 .HasColumnName("CREATED_AT");
-            entity.Property(e => e.Currency)
-                .HasMaxLength(10)
-                .HasColumnName("CURRENCY");
+            entity.Property(e => e.Currency).HasColumnName("CURRENCY");
             entity.Property(e => e.Description).HasColumnName("DESCRIPTION");
             entity.Property(e => e.Email)
                 .HasMaxLength(255)
@@ -637,10 +639,11 @@ public partial class AppDbContext : DbContext
 
         modelBuilder.Entity<GroupUser>(entity =>
         {
-            entity
-                .HasNoKey()
-                .ToTable("GROUP_USER");
+            entity.HasKey(e => e.Id).HasName("PK__GROUP_US__3214EC27F7E7BC74");
 
+            entity.ToTable("GROUP_USER");
+
+            entity.Property(e => e.Id).HasColumnName("ID");
             entity.Property(e => e.GroupId).HasColumnName("GROUP_ID");
             entity.Property(e => e.UserId)
                 .HasMaxLength(10)
@@ -1043,6 +1046,9 @@ public partial class AppDbContext : DbContext
             entity.ToTable("USER");
 
             entity.Property(e => e.Id).HasColumnName("ID");
+            entity.Property(e => e.CreatedOn)
+                .HasColumnType("datetime")
+                .HasColumnName("CREATED_ON");
             entity.Property(e => e.Email)
                 .HasMaxLength(100)
                 .IsUnicode(false)

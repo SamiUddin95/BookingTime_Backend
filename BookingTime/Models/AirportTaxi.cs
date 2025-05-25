@@ -7,6 +7,8 @@ public partial class AirportTaxi
 {
     public int Id { get; set; }
 
+    public string? CompanyName { get; set; }
+
     public string OperatingAirport { get; set; } = null!;
 
     public int CountryId { get; set; }
@@ -27,7 +29,7 @@ public partial class AirportTaxi
 
     public decimal BasePrice { get; set; }
 
-    public string Currency { get; set; } = null!;
+    public int Currency { get; set; }
 
     public string AvailabilityStatus { get; set; } = null!;
 
