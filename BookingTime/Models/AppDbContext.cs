@@ -43,6 +43,8 @@ public partial class AppDbContext : DbContext
 
     public virtual DbSet<City> Cities { get; set; }
 
+    public virtual DbSet<CityTaxiBasePrice> CityTaxiBasePrices { get; set; }
+
     public virtual DbSet<Country> Countries { get; set; }
 
     public virtual DbSet<Currency> Currencies { get; set; }
@@ -152,25 +154,30 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.AvailabilityStatus)
                 .HasMaxLength(50)
                 .HasColumnName("AVAILABILITY_STATUS");
-            entity.Property(e => e.CompanyName)
-    .HasMaxLength(50)
-    .HasColumnName("COMPANY_NAME");
             entity.Property(e => e.BasePrice)
                 .HasColumnType("decimal(18, 2)")
                 .HasColumnName("BASE_PRICE");
             entity.Property(e => e.BookingPerDay).HasColumnName("BOOKING_PER_DAY");
             entity.Property(e => e.Capacity).HasColumnName("CAPACITY");
-            entity.Property(e => e.CityId).HasColumnName("CITY_ID");
+            entity.Property(e => e.City)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("CITY");
+            entity.Property(e => e.CompanyName)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("COMPANY_NAME");
             entity.Property(e => e.ContactNumber)
                 .HasMaxLength(50)
                 .HasColumnName("CONTACT_NUMBER");
-            entity.Property(e => e.CountryId).HasColumnName("COUNTRY_ID");
+            entity.Property(e => e.Country)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("COUNTRY");
             entity.Property(e => e.CreatedAt)
                 .HasColumnType("datetime")
                 .HasColumnName("CREATED_AT");
-            entity.Property(e => e.Currency)
-                .HasMaxLength(10)
-                .HasColumnName("CURRENCY");
+            entity.Property(e => e.Currency).HasColumnName("CURRENCY");
             entity.Property(e => e.Description).HasColumnName("DESCRIPTION");
             entity.Property(e => e.Email)
                 .HasMaxLength(255)
@@ -188,7 +195,10 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.OperatingAirport)
                 .HasMaxLength(255)
                 .HasColumnName("OPERATING_AIRPORT");
-            entity.Property(e => e.StateId).HasColumnName("STATE_ID");
+            entity.Property(e => e.State)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("STATE");
             entity.Property(e => e.Status)
                 .HasMaxLength(50)
                 .HasColumnName("STATUS");
@@ -544,6 +554,21 @@ public partial class AppDbContext : DbContext
             entity.HasOne(d => d.Country).WithMany(p => p.Cities)
                 .HasForeignKey(d => d.CountryId)
                 .HasConstraintName("FK__City__CountryId__76619304");
+        });
+
+        modelBuilder.Entity<CityTaxiBasePrice>(entity =>
+        {
+            entity.ToTable("CITY_TAXI_BASE_PRICE");
+
+            entity.Property(e => e.Id).HasColumnName("ID");
+            entity.Property(e => e.BasePrice)
+                .HasColumnType("decimal(10, 3)")
+                .HasColumnName("BASE_PRICE");
+            entity.Property(e => e.CityName)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("CITY_NAME");
+            entity.Property(e => e.CurrencyId).HasColumnName("CURRENCY_ID");
         });
 
         modelBuilder.Entity<Country>(entity =>
@@ -1046,6 +1071,9 @@ public partial class AppDbContext : DbContext
             entity.ToTable("USER");
 
             entity.Property(e => e.Id).HasColumnName("ID");
+            entity.Property(e => e.CreatedOn)
+                .HasColumnType("datetime")
+                .HasColumnName("CREATED_ON");
             entity.Property(e => e.Email)
                 .HasMaxLength(100)
                 .IsUnicode(false)

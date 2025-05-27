@@ -2,9 +2,9 @@
 {
     public class AddAirportTaxiRequestModel
     {
-        public int countryId { get; set; }
-        public int cityId { get; set; }
-        public int stateId { get; set; }
+        public string country { get; set; }
+        public string city { get; set; }
+        public string state { get; set; }
         public string companyName { get; set; }
         public string operatingAirport { get; set; }
         public int bookingPerDay { get; set; }

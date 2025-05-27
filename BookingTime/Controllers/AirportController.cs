@@ -63,8 +63,8 @@ namespace BookingTime.Controllers
             {
                 var existingTaxi = _context.AirportTaxis.FirstOrDefault(t =>
                     t.VehicleType == request.vehicleType &&
-                    t.CountryId == request.countryId &&
-                    t.CityId == request.cityId);
+                    t.Country == request.country &&
+                    t.City == request.city);
 
                 if (existingTaxi != null)
                 {
@@ -81,9 +81,9 @@ namespace BookingTime.Controllers
                 {
                     CompanyName = request.companyName,
                     OperatingAirport = request.operatingAirport,
-                    CountryId = request.countryId,
-                    CityId = request.cityId,
-                    StateId = request.stateId,
+                    Country = request.country,
+                    City = request.city,
+                    State = request.state,
                     BookingPerDay = request.bookingPerDay,
                     FleetSize = request.fleetSize,
                     Website = request.website,
@@ -256,6 +256,107 @@ namespace BookingTime.Controllers
             }
         }
 
+        [HttpPost("/api/GetAirportTaxisList")]
+        [EnableCors("AllowAngularApp")]
+        public async Task<List<AirportTaxisListResponseModel>> GetAirportTaxiList(string cityName = null)
+        {
+            var taxiVehicles = new List<AirportTaxisListResponseModel>();
+
+            try
+            {
+                string connectionString = _configuration.GetConnectionString("BookingTimeConnection");
+
+                using (var con = new SqlConnection(connectionString))
+                {
+                    con.Open();
+
+                    using (var cmd = new SqlCommand("GetTaxiVehicleTypesByCity", con))
+                    {
+                        cmd.CommandType = CommandType.StoredProcedure;
+
+                        if (!string.IsNullOrEmpty(cityName))
+                        {
+                            cmd.Parameters.Add(new SqlParameter("@CityName", SqlDbType.NVarChar, 100) { Value = cityName.ToLower().Trim() });
+                        }
+                        else
+                        {
+                            cmd.Parameters.Add(new SqlParameter("@CityName", SqlDbType.NVarChar, 100) { Value = DBNull.Value });
+                        }
+
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                var vehicle = new AirportTaxisListResponseModel
+                                {
+                                    Id =Convert.ToInt32(reader["ID"]),
+                                    Name = reader["Name"]?.ToString(),
+                                    Description = reader["Description"]?.ToString(),
+                                    Capacity = reader["CAPACITY"]?.ToString(),
+                                    Suitcase = reader["SUITCASE"]?.ToString(),
+                                    CityName = reader["city_name"]?.ToString(),
+                                    BasePrice = Convert.ToDecimal(reader["BASE_PRICE"]),
+                                    Currency = reader["Currency"].ToString(),
+                                    CurrencySymbol = reader["CurrencySymbol"].ToString()
+                                };
+
+                                taxiVehicles.Add(vehicle);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Handle exceptions (logging, rethrowing, etc.)
+                throw new ApplicationException("Error retrieving airport taxi list", ex);
+            }
+
+            return taxiVehicles;
+        }
+
+        [HttpPost("/api/AddCitytaxiBasePrice")]
+        [EnableCors("AllowAngularApp")]
+        public async Task<IActionResult> AddCitytaxiBasePriceAsync(AddCitytaxiBasePriceRequestModel req)
+        {
+            try
+            {
+                if (req == null)
+                    return BadRequest(new { message = "Request body is null", success = false });
+
+                var existingCity = await _context.CityTaxiBasePrices.FirstOrDefaultAsync(c => c.CityName.ToLower() == req.cityName.ToLower());
+
+                if (existingCity != null)
+                {
+                    existingCity.BasePrice = req.price;
+                    _context.CityTaxiBasePrices.Update(existingCity);
+                    await _context.SaveChangesAsync();
+
+                    return Ok(new { Message = $"City '{req.cityName}' already exists. Base price updated.", success = true });
+                }
+                else
+                {
+                    var detail = new CityTaxiBasePrice
+                    {
+                        BasePrice = req.price,
+                        CityName = req.cityName,
+                        CurrencyId = req.currencyId
+                    };
+                    await _context.CityTaxiBasePrices.AddAsync(detail);
+                    await _context.SaveChangesAsync();
+
+                    return Ok(new { Message = $"Successfully added", success = true });
+                }
+            }
+            catch (ValidationException vx)
+            {
+                throw new ValidationException(vx.Message ?? "Validation Error");
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.InnerException?.ToString() ?? "Internal Server Error");
+            }
+        }
         private async Task<string> SaveImageAsync(IFormFile? file, string folder = "")
         {
             if (file == null || file.Length == 0)

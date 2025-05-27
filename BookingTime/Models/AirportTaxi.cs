@@ -7,19 +7,21 @@ public partial class AirportTaxi
 {
     public int Id { get; set; }
 
-    public string CompanyName { get; set; } = null!;
+    public string? CompanyName { get; set; }
+
     public string OperatingAirport { get; set; } = null!;
-    public int CountryId { get; set; }
 
-    public int CityId { get; set; }
+    public string Country { get; set; } = null!;
 
-    public int StateId { get; set; }
+    public string City { get; set; } = null!;
+
+    public string State { get; set; } = null!;
 
     public int BookingPerDay { get; set; }
 
     public int FleetSize { get; set; }
 
-    public string? Website { get; set; }
+    public string Website { get; set; } = null!;
 
     public string VehicleType { get; set; } = null!;
 
